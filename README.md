@@ -2,7 +2,7 @@ Friends Module
 ===========
 
 ### Description ###
-This is the Friends Module for Ziah_'s Client, it adds an advanced friend system allowing you to add friends and show their status and receive notifications when they join or leave and chat with them and have group chats and much more.
+This is the Friends Module for Ziah_'s Client, it adds peer to peer chat messages, a friends list, show status notifications, a voice communication system using libjitsi with the Opus protocol and more.
 
 ### Download ###
 This module is available for download at: http://magi-craft.net/jenkins/job/Friends%20Module/.
