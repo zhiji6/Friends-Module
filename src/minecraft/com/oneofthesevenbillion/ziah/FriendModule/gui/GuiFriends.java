@@ -68,7 +68,7 @@ public class GuiFriends extends GuiScreen {
                     }
                     return;
                 case 8:
-                    this.mc.displayGuiScreen(new GuiIPMenu());
+                    this.mc.displayGuiScreen(new GuiIPMenu(this, null));//TODO: Add ip list
                     return;
                 case 9:
                     try {
@@ -118,7 +118,7 @@ public class GuiFriends extends GuiScreen {
                 GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
                 TextureManager tm = this.mc.func_110434_K();
                 BufferedImage logo = this.selectedFriend.getProfilePicture();
-                ResourceLocation rl = tm.func_110578_a("profile-picture-" + String.valueOf(this.selectedFriend.getUID()), new DynamicTexture(logo));
+                ResourceLocation rl = tm.func_110578_a("profile-picture-" + this.selectedFriend.getUsername(), new DynamicTexture(logo));
                 tm.func_110577_a(rl);
 
                 Dimension dim = new Dimension(logo.getWidth(), logo.getHeight());
@@ -181,7 +181,7 @@ public class GuiFriends extends GuiScreen {
         }
     }
 
-    public boolean modIndexSelected(int var1) {
+    public boolean friendIndexSelected(int var1) {
         return var1 == this.selected;
     }
 
@@ -197,6 +197,7 @@ public class GuiFriends extends GuiScreen {
         switch (button) {
             case 0:
                 this.selectedFriend.unfriend();
+                this.selectFriendIndex(-1);
                 break;
         }
     }

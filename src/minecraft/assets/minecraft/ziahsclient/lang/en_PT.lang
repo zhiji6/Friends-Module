@@ -1,0 +1,9 @@
+ziahsclient.key_reload_accessories=Reload Yer Accessories
+
+ziahsclient.gui.set_your_oob_size=Set Yer %?OOB% Size
+ziahsclient.gui.set_your_size=Set Yer Size
+ziahsclient.gui.set_your_gender=Set Yer Gender
+ziahsclient.gui.done=Plundered
+ziahsclient.gui.cancel=Avast
+
+ziahsclient.accessories_key_notice=Press the reload key (default is R) to reload yer accessories and the accessories menu key (default is C) to open the accessories menu.

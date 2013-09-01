@@ -18,9 +18,9 @@ public class ModuleFriend {
 
     public void load() {
         ModuleFriend.instance = this;
-        this.getFriends().add(new Friend(0, "HelloWorld", "Hello World", "Hello, my name is Hello World", null, false, true));
-        this.getFriends().add(new Friend(1, "BigMeany1003", "Big Meany", "Hello, my name is Big Meany", null, true, true));
-        this.getFriends().add(new Friend(2, "98TheCiaran98", "Ciaran Farley", "Hello, my name is Ciaran Farley", null, false, true));
+        this.getFriends().add(new Friend("HelloWorld", "Hello World", "Hello, my name is Hello World", null, false, true));
+        this.getFriends().add(new Friend("BigMeany1003", "Big Meany", "Hello, my name is Big Meany", null, true, true));
+        this.getFriends().add(new Friend("98TheCiaran98", "Ciaran Farley", "Hello, my name is Ciaran Farley", null, false, true));
         try {
             ZiahsClient.getInstance().registerMenuButton(new GuiSmallButton(0, 0, 0, Locale.localize("ziahsclient.gui.friends")), this.getClass().getDeclaredMethod("onFriendButtonClicked"), this);
         } catch (Exception e) {}

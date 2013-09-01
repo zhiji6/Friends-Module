@@ -3,7 +3,6 @@ package com.oneofthesevenbillion.ziah.FriendModule;
 import java.awt.image.BufferedImage;
 
 public class Friend {
-    private long uid;
     private String username;
     private String realname;
     private String description;
@@ -11,18 +10,13 @@ public class Friend {
     private boolean blocked = false;
     private boolean punchProtection = true;
 
-    public Friend(long uid, String username, String realname, String description, BufferedImage profilePicture, boolean blocked, boolean punchProtection) {
-        this.uid = uid;
+    public Friend(String username, String realname, String description, BufferedImage profilePicture, boolean blocked, boolean punchProtection) {
         this.username = username;
         this.realname = realname;
         this.description = description;
         this.profilePicture = profilePicture;
         this.blocked = blocked;
         this.punchProtection = punchProtection;
-    }
-
-    public long getUID() {
-        return this.uid;
     }
 
     public String getUsername() {
