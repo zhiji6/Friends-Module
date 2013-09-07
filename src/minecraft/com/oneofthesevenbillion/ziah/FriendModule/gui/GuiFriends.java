@@ -18,6 +18,10 @@ import net.minecraft.src.TextureManager;
 import org.lwjgl.opengl.GL11;
 
 import com.oneofthesevenbillion.ziah.FriendModule.Friend;
+import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
+import com.oneofthesevenbillion.ziah.FriendModule.network.NotConnectedException;
+import com.oneofthesevenbillion.ziah.FriendModule.network.PacketChat;
+import com.oneofthesevenbillion.ziah.FriendModule.network.PacketManager;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
 import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiQuestion;
 
@@ -56,7 +60,7 @@ public class GuiFriends extends GuiScreen {
                     this.mc.displayGuiScreen(this.parent);
                     return;
                 case 7:
-                    if (!this.selectedFriend.isBlocked()) {
+                	/*if (!this.selectedFriend.isBlocked()) {
                         try {
                             this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_block").replace("%USERNAME%", this.selectedFriend.getUsername()), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("blockCallback", Integer.class), this));
                         } catch (NoSuchMethodException e) {
@@ -66,14 +70,15 @@ public class GuiFriends extends GuiScreen {
                         }
                     }else{
                         this.selectedFriend.toggleBlockedStatus();
-                    }
+                    }*/
+					try {
+						PacketManager.sendPacket("127.0.0.1", new PacketChat("Hello World"));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
                     return;
                 case 8:
-                	List<String> ips = new ArrayList<String>();
-                	ips.add("132.146.156.78");
-                	ips.add("172.152.243.21");
-                	ips.add("225.217.134.74");
-                    this.mc.displayGuiScreen(new GuiIPMenu(this, ips));//TODO: Add ip list
+                    this.mc.displayGuiScreen(new GuiIPMenu(this, ModuleFriend.getInstance().getIPs()));
                     return;
                 case 9:
                     try {

@@ -1,6 +1,13 @@
 package com.oneofthesevenbillion.ziah.FriendModule;
 
 import java.awt.image.BufferedImage;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import javax.imageio.ImageIO;
+
+import com.oneofthesevenbillion.ziah.FriendModule.network.PacketManager;
 
 public class Friend {
     private String username;
@@ -58,4 +65,12 @@ public class Friend {
     public boolean isPunchProtectionEnabled() {
         return this.punchProtection;
     }
+
+    public static Friend readFromStream(DataInputStream dataStream) throws IOException {
+		return new Friend(dataStream.readUTF(), dataStream.readUTF(), dataStream.readUTF(), ImageIO.read(dataStream), false, true);
+    }
+
+	public void writeToStream(DataOutputStream dataStream) {
+		PacketManager.encodeDataStream(dataStream, (String) this.username, (String) this.realname, (String) this.description, (BufferedImage) this.profilePicture);
+	}
 }
