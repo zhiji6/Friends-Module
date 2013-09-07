@@ -2,6 +2,7 @@ package com.oneofthesevenbillion.ziah.FriendModule.gui;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.src.DynamicTexture;
@@ -68,7 +69,11 @@ public class GuiFriends extends GuiScreen {
                     }
                     return;
                 case 8:
-                    this.mc.displayGuiScreen(new GuiIPMenu(this, null));//TODO: Add ip list
+                	List<String> ips = new ArrayList<String>();
+                	ips.add("132.146.156.78");
+                	ips.add("172.152.243.21");
+                	ips.add("225.217.134.74");
+                    this.mc.displayGuiScreen(new GuiIPMenu(this, ips));//TODO: Add ip list
                     return;
                 case 9:
                     try {
@@ -112,7 +117,7 @@ public class GuiFriends extends GuiScreen {
         int offsetX = this.listWidth + 20;
         if (this.selectedFriend != null) {
             GL11.glEnable(GL11.GL_BLEND);
-            int offsetY = 0;
+            int offsetY = 35;
 
             if (this.selectedFriend.hasProfilePicture()) {
                 GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
@@ -141,7 +146,6 @@ public class GuiFriends extends GuiScreen {
                 offsetY += dim.height + 2;
             }
 
-            offsetY += 35;
             this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.username").replace("%USERNAME%", this.selectedFriend.getUsername()), offsetX, offsetY, 0xFFFFFF);
             offsetY += 9;
             this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.realname").replace("%REALNAME%", this.selectedFriend.getRealname()), offsetX, offsetY, 0xDDDDDD);

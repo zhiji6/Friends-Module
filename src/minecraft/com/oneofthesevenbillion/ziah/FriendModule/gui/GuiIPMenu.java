@@ -37,9 +37,9 @@ public class GuiIPMenu extends GuiScreen {
 
 	@Override
     public void initGui() {
-        this.listWidth = 200;
+        this.listWidth = 84;
         this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, Locale.localize("ziahsclient.gui.done")));
-        this.buttonList.add(new GuiSmallButton(7, 158, this.height - 52, Locale.localize("ziahsclient.gui.friends.unfriend")));
+        this.buttonList.add(new GuiSmallButton(7, 4, this.height - 52, Locale.localize("ziahsclient.gui.friends.remove_ip")));
         this.ipList = new GuiSlotIPs(this, this.ips, this.listWidth);
         this.ipList.registerScrollButtons(this.buttonList, 7, 8);
     }
@@ -84,9 +84,9 @@ public class GuiIPMenu extends GuiScreen {
         int offsetX = this.listWidth + 20;
         if (this.selectedIp != null) {
             GL11.glEnable(GL11.GL_BLEND);
-            int offsetY = 0;
+            int offsetY = 35;
 
-            this.drawString(this.fontRenderer, this.selectedIp, offsetX, offsetY, 0xFFFFFF);
+            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.ip").replace("%IP%", this.selectedIp), offsetX, offsetY, 0xFFFFFF);
             offsetY += 9;
             offsetY += 9;
             GL11.glDisable(GL11.GL_BLEND);
@@ -102,7 +102,7 @@ public class GuiIPMenu extends GuiScreen {
         return this.fontRenderer;
     }
 
-    public void selectFriendIndex(int var1) {
+    public void selectIPIndex(int var1) {
         this.selected = var1;
         if (var1 >= 0 && var1 <= this.ips.size()) {
             this.selectedIp = this.ips.get(this.selected);
@@ -113,5 +113,15 @@ public class GuiIPMenu extends GuiScreen {
 
     public boolean ipIndexSelected(int var1) {
         return var1 == this.selected;
+    }
+
+    public void removeipCallback(Integer button) {
+    	switch (button) {
+	        case 0:
+	            this.ips.remove(this.selected);
+	            this.ipList.ips.remove(this.selectedIp);
+	            this.selectIPIndex(-1);
+	            break;
+	    }
     }
 }

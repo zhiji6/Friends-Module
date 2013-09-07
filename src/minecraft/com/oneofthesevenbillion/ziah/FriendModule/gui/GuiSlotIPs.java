@@ -9,10 +9,10 @@ import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiScrollingList;
 
 public class GuiSlotIPs extends GuiScrollingList {
     private GuiIPMenu parent;
-    private List<String> ips;
+    public List<String> ips;
 
     public GuiSlotIPs(GuiIPMenu parent, List<String> ips, int listWidth) {
-        super(parent.getMinecraftInstance(), listWidth, parent.height, 32, parent.height - 65 + 4, 10, 35);
+        super(parent.getMinecraftInstance(), listWidth, parent.height, 32, parent.height - 65 + 4, 10, 15);
         this.parent = parent;
         this.ips = ips;
     }
@@ -24,7 +24,7 @@ public class GuiSlotIPs extends GuiScrollingList {
 
     @Override
     protected void elementClicked(int var1, boolean var2) {
-        this.parent.selectFriendIndex(var1);
+        this.parent.selectIPIndex(var1);
     }
 
     @Override
