@@ -25,6 +25,7 @@ public class PacketPingPong extends Packet {
         }
 
         if (packet.isResponse) {
+        	System.out.println("Received ping response packet from " + sender);
 	        if (!ModuleFriend.getInstance().getOnlineIPs().contains(sender)) ModuleFriend.getInstance().getOnlineIPs().add(sender);
 	        try {
 				PacketManager.sendPacket(sender, new PacketHi());
@@ -32,6 +33,7 @@ public class PacketPingPong extends Packet {
 				// Ignore
 			}
         }else{
+        	System.out.println("Received ping request packet from " + sender);
         	try {
 				PacketManager.sendPacket(sender, new PacketPingPong(true));
 			} catch (NotConnectedException e) {

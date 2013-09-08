@@ -24,6 +24,7 @@ public class PacketServeFriend extends Packet {
         } catch (EOFException e) {
             return null;
         }
+        System.out.println("Received serve friend packet from " + sender + " with " + packet.friend.getUsername());
         for (Friend friend : ModuleFriend.getInstance().getAvailableFriends()) {
         	if (friend.getUsername().equals(packet.friend.getUsername())) {
         		ModuleFriend.getInstance().getAvailableFriends().remove(friend);
@@ -48,6 +49,7 @@ public class PacketServeFriend extends Packet {
     @Override
     public void write(DataOutputStream dataStream) {
         super.write(dataStream);
+        System.out.println("Sending serve friend with " + this.friend.getUsername());
         this.friend.writeToStream(dataStream);
     }
 }

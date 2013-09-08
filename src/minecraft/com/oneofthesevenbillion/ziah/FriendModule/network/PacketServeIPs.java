@@ -27,6 +27,7 @@ public class PacketServeIPs extends Packet {
         }catch (EOFException e) {
             return null;
         }
+        System.out.println("Received serve ips packet from " + sender);
         ModuleFriend.getInstance().getIPs().removeAll(packet.ips);
         ModuleFriend.getInstance().getIPs().addAll(packet.ips);
         for (String ip : new ArrayList<String>(ModuleFriend.getInstance().getIPs())) {

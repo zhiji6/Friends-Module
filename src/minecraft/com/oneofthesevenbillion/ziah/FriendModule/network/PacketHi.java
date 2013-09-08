@@ -20,6 +20,7 @@ public class PacketHi extends Packet {
         } catch (EOFException e) {
             return null;
         }
+        System.out.println("Received hi packet from " + sender + ", sending serve packets");
         try {
 			PacketManager.sendPacket(sender, new PacketServeFriend(ModuleFriend.getInstance().getPlayer()));
 		} catch (NotConnectedException e) {

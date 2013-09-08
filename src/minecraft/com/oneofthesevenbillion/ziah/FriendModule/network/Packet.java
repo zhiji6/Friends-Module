@@ -11,6 +11,7 @@ public class Packet {
     }
 
     public void write(DataOutputStream dataStream) {
+    	System.out.println("Sending " + this.getClass().getSimpleName() + " packet");
         PacketManager.encodeDataStream(dataStream, this.packetID);
     }
 
