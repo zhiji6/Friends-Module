@@ -4,8 +4,10 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -32,7 +34,18 @@ public class PacketServeIPs extends Packet {
         for (String ip : new ArrayList<String>(ModuleFriend.getInstance().getIPs())) {
         	try {
         		InetAddress inetaddr = InetAddress.getByName(ip);
-				if (inetaddr.isLoopbackAddress() || inetaddr.isLinkLocalAddress() || InetAddress.getLocalHost().equals(inetaddr)) {
+        		List<String> localips = new ArrayList<String>();
+        		try {
+	        		Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+	        		while (interfaces.hasMoreElements()) {
+	        			NetworkInterface curInterface = interfaces.nextElement();
+	        			Enumeration<InetAddress> addrs = curInterface.getInetAddresses();
+	        			while (addrs.hasMoreElements()) {
+		        			localips.add(addrs.nextElement().getHostAddress());
+	        			}
+	        		}
+        		} catch (Exception e) {}
+				if (inetaddr.isLoopbackAddress() || inetaddr.isLinkLocalAddress() || InetAddress.getLocalHost().equals(inetaddr) || localips.contains(ip)) {
 					ModuleFriend.getInstance().getIPs().remove(ip);
 				}
 			} catch (UnknownHostException e) {
