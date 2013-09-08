@@ -17,20 +17,20 @@ public class PacketServeFriend extends Packet {
         this.friend = friend;
     }
 
-    public static Packet process(FriendServerNetworkManager netManager, DataInputStream dataStream) {
+    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketServeFriend packet = new PacketServeFriend(null);
         try {
             packet.read(dataStream);
         } catch (EOFException e) {
             return null;
         }
-        for (Friend friend : ModuleFriend.getInstance().getFriends()) {
+        for (Friend friend : ModuleFriend.getInstance().getAvailableFriends()) {
         	if (friend.getUsername().equals(packet.friend.getUsername())) {
-        		ModuleFriend.getInstance().getFriends().remove(friend);
+        		ModuleFriend.getInstance().getAvailableFriends().remove(friend);
         		break;
         	}
         }
-        ModuleFriend.getInstance().getFriends().add(packet.friend);
+        ModuleFriend.getInstance().getAvailableFriends().add(packet.friend);
         return packet;
     }
 

@@ -16,18 +16,24 @@ public class PacketPingPong extends Packet {
         this.isResponse = isResponse;
     }
 
-    public static Packet process(FriendServerNetworkManager netManager, DataInputStream dataStream) {
+    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketPingPong packet = new PacketPingPong(false);
         try {
             packet.read(dataStream);
         } catch (EOFException e) {
             return null;
         }
+
         if (packet.isResponse) {
-	        if (!ModuleFriend.getInstance().getOnlineIPs().contains(packet.sender)) ModuleFriend.getInstance().getOnlineIPs().add(packet.sender);
+	        if (!ModuleFriend.getInstance().getOnlineIPs().contains(sender)) ModuleFriend.getInstance().getOnlineIPs().add(sender);
+	        try {
+				PacketManager.sendPacket(sender, new PacketHi());
+			} catch (NotConnectedException e) {
+				// Ignore
+			}
         }else{
         	try {
-				PacketManager.sendPacket(packet.sender, new PacketPingPong(true));
+				PacketManager.sendPacket(sender, new PacketPingPong(true));
 			} catch (NotConnectedException e) {
 				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when sending pong!", e);
 			}

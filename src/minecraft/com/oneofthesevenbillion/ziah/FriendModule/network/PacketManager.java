@@ -42,10 +42,10 @@ public class PacketManager {
         return data;
     }
 
-    public static void onPacketData(FriendServerNetworkManager netManager, int pktid, DataInputStream dis) {
+    public static void onPacketData(FriendServerNetworkManager netManager, String sender, int pktid, DataInputStream dis) {
         try {
             Class packet = PacketRegistry.instance.getPacketByID(pktid);
-            if (packet != null) packet.getMethod("process", FriendServerNetworkManager.class, DataInputStream.class).invoke(null, netManager, dis);
+            if (packet != null) packet.getMethod("process", FriendServerNetworkManager.class, String.class, DataInputStream.class).invoke(null, netManager, sender, dis);
             else
                 ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Unknown packet " + pktid + ".");
         }catch (Exception e) {

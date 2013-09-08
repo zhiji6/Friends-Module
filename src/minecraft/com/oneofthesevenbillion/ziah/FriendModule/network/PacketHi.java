@@ -13,7 +13,7 @@ public class PacketHi extends Packet {
         this.packetID = 3;
     }
 
-    public static Packet process(FriendServerNetworkManager netManager, DataInputStream dataStream) {
+    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketHi packet = new PacketHi();
         try {
             packet.read(dataStream);
@@ -21,12 +21,12 @@ public class PacketHi extends Packet {
             return null;
         }
         try {
-			PacketManager.sendPacket(packet.sender, new PacketServeFriend(ModuleFriend.getInstance().getPlayer()));
+			PacketManager.sendPacket(sender, new PacketServeFriend(ModuleFriend.getInstance().getPlayer()));
 		} catch (NotConnectedException e) {
 			ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when serving friend!", e);
 		}
         try {
-			PacketManager.sendPacket(packet.sender, new PacketServeIPs(ModuleFriend.getInstance().getIPs()));
+			PacketManager.sendPacket(sender, new PacketServeIPs(ModuleFriend.getInstance().getIPs()));
 		} catch (NotConnectedException e) {
 			ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when serving ips!", e);
 		}

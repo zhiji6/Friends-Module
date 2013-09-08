@@ -2,15 +2,20 @@ package com.oneofthesevenbillion.ziah.FriendModule.gui;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.List;
 
 import org.lwjgl.opengl.GL11;
 
 import com.oneofthesevenbillion.ziah.FriendModule.Friend;
+import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
+import com.oneofthesevenbillion.ziah.FriendModule.network.ThreadFindHostname;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
 import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiQuestion;
 
 import net.minecraft.src.DynamicTexture;
+import net.minecraft.src.EnumChatFormatting;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
@@ -28,6 +33,9 @@ public class GuiIPMenu extends GuiScreen {
     private int listWidth;
     private List<String> ips;
     private String title;
+    private String hostname;
+	private boolean hostnameChecked = false;
+	private int lastSelected = -1;
 
 	public GuiIPMenu(GuiScreen parent, List<String> ips) {
         this.parent = parent;
@@ -40,6 +48,7 @@ public class GuiIPMenu extends GuiScreen {
         this.listWidth = 84;
         this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, Locale.localize("ziahsclient.gui.done")));
         this.buttonList.add(new GuiSmallButton(7, 4, this.height - 52, Locale.localize("ziahsclient.gui.friends.remove_ip")));
+        this.buttonList.add(new GuiSmallButton(8, 158, this.height - 28, Locale.localize("ziahsclient.gui.friends.add_ip")));
         this.ipList = new GuiSlotIPs(this, this.ips, this.listWidth);
         this.ipList.registerScrollButtons(this.buttonList, 7, 8);
     }
@@ -60,6 +69,9 @@ public class GuiIPMenu extends GuiScreen {
                         // Impossible
                     }
                     return;
+                case 8:
+                    this.mc.displayGuiScreen(new GuiAddIP(this));
+                    return;
             }
         }
         super.actionPerformed(button);
@@ -74,6 +86,16 @@ public class GuiIPMenu extends GuiScreen {
     public void updateScreen() {
         if (this.buttonList.size() <= 0) return;
         ((GuiButton) this.buttonList.get(1)).enabled = this.selected != -1;
+        if (!this.hostnameChecked || this.lastSelected != this.selected) {
+        	this.hostname = null;
+			try {
+				new ThreadFindHostname(this.selectedIp, this.getClass().getDeclaredMethod("findHostnameCallback", String.class), this).start();
+			} catch (Exception e) {
+				// Ignore exceptions
+			}
+        	this.hostnameChecked = true;
+        	this.lastSelected = this.selected;
+        }
     }
 
     @Override
@@ -86,7 +108,11 @@ public class GuiIPMenu extends GuiScreen {
             GL11.glEnable(GL11.GL_BLEND);
             int offsetY = 35;
 
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.ip").replace("%IP%", this.selectedIp), offsetX, offsetY, 0xFFFFFF);
+            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.ip").replace("%IP%", this.selectedIp) + (hostname != null ? Locale.localize("ziahsclient.gui.friends.ip.hostname").replace("%HOSTNAME%", hostname) : ""), offsetX, offsetY, 0xFFFFFF);
+            offsetY += 9;
+            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.friend_status").replace("%STATUS%", (ModuleFriend.getInstance().getOnlineIPs().contains(this.selectedIp) ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + Locale.localize("ziahsclient.gui.friends.status." + (ModuleFriend.getInstance().getOnlineIPs().contains(this.selectedIp) ? "online" : "offline")) + EnumChatFormatting.RESET), offsetX, offsetY, 0xFFFFFF);
+            offsetY += 9;
+            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.network_status").replace("%STATUS%", (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + Locale.localize("ziahsclient.gui.friends.status." + (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? "online" : "offline")) + EnumChatFormatting.RESET) + (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? Locale.localize("ziahsclient.gui.friends.network_status.ping").replace("%PING%", ModuleFriend.getInstance().getIPNetPings().containsKey(this.selectedIp) ? String.valueOf(ModuleFriend.getInstance().getIPNetPings().get(this.selectedIp) < 2000 ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + ModuleFriend.getInstance().getIPNetPings().get(this.selectedIp) + "ms" + EnumChatFormatting.RESET + " Roundtrip" : "Unknown") : ""), offsetX, offsetY, 0xFFFFFF);
             offsetY += 9;
             offsetY += 9;
             GL11.glDisable(GL11.GL_BLEND);
@@ -121,7 +147,12 @@ public class GuiIPMenu extends GuiScreen {
 	            this.ips.remove(this.selected);
 	            this.ipList.ips.remove(this.selectedIp);
 	            this.selectIPIndex(-1);
+	            ModuleFriend.getInstance().saveIPs();
 	            break;
 	    }
+    }
+
+    public void findHostnameCallback(String hostname) {
+    	this.hostname = hostname;
     }
 }

@@ -16,7 +16,7 @@ public class PacketChat extends Packet {
         this.message = message;
     }
 
-    public static Packet process(FriendServerNetworkManager netManager, DataInputStream dataStream) {
+    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketChat packet = new PacketChat(null);
         try {
             packet.read(dataStream);

@@ -21,7 +21,7 @@ public class PacketPlaySound extends Packet {
         this.pitch = pitch;
     }
 
-    public static Packet process(DataInputStream dataStream) {
+    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketPlaySound packet = new PacketPlaySound(null, 0.0F, 0.0F);
         try {
             packet.read(dataStream);

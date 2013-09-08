@@ -6,7 +6,6 @@ import java.io.EOFException;
 
 public class Packet {
     public int packetID;
-    public String sender;
 
     public Packet() {
     }

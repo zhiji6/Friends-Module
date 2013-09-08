@@ -52,6 +52,7 @@ public class Friend {
 
     public void unfriend() {
         ModuleFriend.getInstance().getFriends().remove(this);
+        ModuleFriend.getInstance().saveFriends();
     }
 
     public void togglePunchProtection() {

@@ -20,7 +20,7 @@ public class PacketServeIPs extends Packet {
         this.ips = ips;
     }
 
-    public static Packet process(FriendServerNetworkManager netManager, DataInputStream dataStream) {
+    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketServeIPs packet = new PacketServeIPs(null);
         try {
             packet.read(dataStream);
@@ -29,7 +29,7 @@ public class PacketServeIPs extends Packet {
         }
         ModuleFriend.getInstance().getIPs().removeAll(packet.ips);
         ModuleFriend.getInstance().getIPs().addAll(packet.ips);
-        for (String ip : ModuleFriend.getInstance().getIPs()) {
+        for (String ip : new ArrayList<String>(ModuleFriend.getInstance().getIPs())) {
         	try {
 				if (InetAddress.getByName(ip).isLoopbackAddress()) {
 					ModuleFriend.getInstance().getIPs().remove(ip);
@@ -38,6 +38,7 @@ public class PacketServeIPs extends Packet {
 				// Friend server is unknown
 			}
         }
+        ModuleFriend.getInstance().saveIPs();
         return packet;
     }
 

@@ -25,31 +25,35 @@ import com.oneofthesevenbillion.ziah.FriendModule.network.PacketManager;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
 import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiQuestion;
 
-public class GuiFriends extends GuiScreen {
+public class GuiAvailableFriends extends GuiScreen {
     private GuiScreen parent;
-    private GuiSlotFriends friendList;
+    private GuiSlotAvailableFriends friendList;
     private int selected = -1;
     private Friend selectedFriend;
     private int listWidth;
     private List<Friend> friends;
     private String title;
 
-    public GuiFriends(GuiScreen parent, List<Friend> friends) {
+    public GuiAvailableFriends(GuiScreen parent, List<Friend> friends) {
         this.parent = parent;
-        this.friends = friends;
-        this.title = Locale.localize("ziahsclient.gui.friends");
+        this.friends = new ArrayList<Friend>(friends);
+        this.title = Locale.localize("ziahsclient.gui.friends.available_friends");
+
+        for (Friend friend2 : ModuleFriend.getInstance().getFriends()) {
+            for (Friend friend : this.friends) {
+            	if (friend.getUsername().equalsIgnoreCase(friend2.getUsername())) {
+            		this.friends.remove(friend);
+            	}
+            }
+    	}
     }
 
     @Override
     public void initGui() {
         this.listWidth = 200;
-        this.buttonList.add(new GuiSmallButton(11, 312, this.height - 52, Locale.localize("ziahsclient.gui.friends.block")));
-        this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, Locale.localize("ziahsclient.gui.done")));
-        this.buttonList.add(new GuiSmallButton(12, 158, this.height - 28, Locale.localize("ziahsclient.gui.friends.open_ip_menu")));
-        this.buttonList.add(new GuiSmallButton(9, 158, this.height - 52, Locale.localize("ziahsclient.gui.friends.unfriend")));
-        this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, Locale.localize("ziahsclient.gui.friends.disable_punch_protection")));
-        this.buttonList.add(new GuiSmallButton(13, 312, this.height - 28, Locale.localize("ziahsclient.gui.friends.open_available_friends_menu")));
-        this.friendList = new GuiSlotFriends(this, this.friends, this.listWidth);
+        this.buttonList.add(new GuiSmallButton(0, 4, this.height - 28, Locale.localize("ziahsclient.gui.done")));
+        this.buttonList.add(new GuiSmallButton(1, 4, this.height - 52, Locale.localize("ziahsclient.gui.friends.friend")));
+        this.friendList = new GuiSlotAvailableFriends(this, this.friends, this.listWidth);
         this.friendList.registerScrollButtons(this.buttonList, 7, 8);
     }
 
@@ -57,44 +61,17 @@ public class GuiFriends extends GuiScreen {
     protected void actionPerformed(GuiButton button) {
         if (button.enabled) {
             switch (button.id) {
-                case 6:
+                case 0:
                     this.mc.displayGuiScreen(this.parent);
                     return;
-                case 11:
-                	/*if (!this.selectedFriend.isBlocked()) {
-                        try {
-                            this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_block").replace("%USERNAME%", this.selectedFriend.getUsername()), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("blockCallback", Integer.class), this));
-                        } catch (NoSuchMethodException e) {
-                            // Impossible
-                        } catch (SecurityException e) {
-                            // Impossible
-                        }
-                    }else{
-                        this.selectedFriend.toggleBlockedStatus();
-                    }*/
-					try {
-						PacketManager.sendPacket("127.0.0.1", new PacketChat("Hello World"));
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-                    return;
-                case 12:
-                    this.mc.displayGuiScreen(new GuiIPMenu(this, ModuleFriend.getInstance().getIPs()));
-                    return;
-                case 13:
-                    this.mc.displayGuiScreen(new GuiAvailableFriends(this, ModuleFriend.getInstance().getAvailableFriends()));
-                    return;
-                case 9:
+                case 1:
                     try {
-                        this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_unfriend").replace("%USERNAME%", this.selectedFriend.getUsername()), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("unfriendCallback", Integer.class), this));
+                        this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_friend").replace("%USERNAME%", this.selectedFriend.getUsername()), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("friendCallback", Integer.class), this));
                     } catch (NoSuchMethodException e) {
                         // Impossible
                     } catch (SecurityException e) {
                         // Impossible
                     }
-                    return;
-                case 10:
-                    this.selectedFriend.togglePunchProtection();
                     return;
             }
         }
@@ -109,13 +86,16 @@ public class GuiFriends extends GuiScreen {
     @Override
     public void updateScreen() {
         if (this.buttonList.size() <= 0) return;
-        ((GuiButton) this.buttonList.get(0)).enabled = this.selected != -1;
-        ((GuiButton) this.buttonList.get(3)).enabled = this.selected != -1;
-        ((GuiButton) this.buttonList.get(4)).enabled = this.selected != -1;
-        if (this.selected != -1) {
-            ((GuiButton) this.buttonList.get(0)).displayString = Locale.localize(this.selectedFriend.isBlocked() ? "ziahsclient.gui.friends.unblock" : "ziahsclient.gui.friends.block");
-            ((GuiButton) this.buttonList.get(4)).displayString = Locale.localize(this.selectedFriend.isPunchProtectionEnabled() ? "ziahsclient.gui.friends.disable_punch_protection" : "ziahsclient.gui.friends.enable_punch_protection");
+        boolean isFriended = false;
+        if (this.selectedFriend != null) {
+	        for (Friend friend : ModuleFriend.getInstance().getFriends()) {
+	        	if (friend.getUsername().equalsIgnoreCase(this.selectedFriend.getUsername())) {
+	        		isFriended = true;
+	        		break;
+	        	}
+	        }
         }
+        ((GuiButton) this.buttonList.get(1)).enabled = this.selected != -1 && !isFriended;
     }
 
     @Override
@@ -159,10 +139,6 @@ public class GuiFriends extends GuiScreen {
             offsetY += 9;
             this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.realname").replace("%REALNAME%", this.selectedFriend.getRealname()), offsetX, offsetY, 0xDDDDDD);
             offsetY += 9;
-            this.drawString(this.fontRenderer, this.selectedFriend.isBlocked() ? Locale.localize("ziahsclient.gui.friends.blocked") : Locale.localize("ziahsclient.gui.friends.not_blocked"), offsetX, offsetY, this.selectedFriend.isBlocked() ? 0xFFFF5555 : 0xFF00AA00);
-            offsetY += 9;
-            this.drawString(this.fontRenderer, this.selectedFriend.isPunchProtectionEnabled() ? Locale.localize("ziahsclient.gui.friends.punch_protection_enabled") : Locale.localize("ziahsclient.gui.friends.punch_protection_disabled"), offsetX, offsetY, this.selectedFriend.isPunchProtectionEnabled() ? 0xFF00AA00 : 0xFFFF5555);
-            offsetY += 9;
             offsetY += 9;
             
             int i = 0;
@@ -198,18 +174,11 @@ public class GuiFriends extends GuiScreen {
         return var1 == this.selected;
     }
 
-    public void blockCallback(Integer button) {
+    public void friendCallback(Integer button) {
         switch (button) {
             case 0:
-                this.selectedFriend.toggleBlockedStatus();
-                break;
-        }
-    }
-
-    public void unfriendCallback(Integer button) {
-        switch (button) {
-            case 0:
-                this.selectedFriend.unfriend();
+            	ModuleFriend.getInstance().getFriends().add(this.selectedFriend);
+                this.friends.remove(this.selectedFriend);
                 this.selectFriendIndex(-1);
                 break;
         }

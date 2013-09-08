@@ -54,7 +54,7 @@ public class FriendServerNetworkManager {
             this.dataHandlerThread = new Thread(new FriendServerDataHandler(this), "FriendServerDataHandler");
             this.dataHandlerThread.start();
             this.isRunning = true;
-        }catch (Exception e) {
+        } catch (Exception e) {
             ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when starting the friends server socket.", e);
         }
     }

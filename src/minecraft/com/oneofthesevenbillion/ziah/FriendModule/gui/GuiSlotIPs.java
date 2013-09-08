@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.src.Tessellator;
 
 import com.oneofthesevenbillion.ziah.FriendModule.Friend;
+import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
 import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiScrollingList;
 
 public class GuiSlotIPs extends GuiScrollingList {
@@ -45,6 +46,6 @@ public class GuiSlotIPs extends GuiScrollingList {
     @Override
     protected void drawSlot(int listIndex, int var2, int var3, int var4, Tessellator var5) {
         String ip = this.ips.get(listIndex);
-        this.parent.getFontRenderer().drawString(this.parent.getFontRenderer().trimStringToWidth(ip, this.listWidth - 10), this.left + 3, var3 + 2, 0xFFFFFF);
+        this.parent.getFontRenderer().drawString(this.parent.getFontRenderer().trimStringToWidth(ip, this.listWidth - 10), this.left + 3, var3 + 2, ModuleFriend.getInstance().getOnlineIPs().contains(ip) ? 0xFF00BE00 : (ModuleFriend.getInstance().getNetOnlineIPs().contains(ip) ? 0xFFD9A334 : 0xFFFE3F3F));
     }
 }

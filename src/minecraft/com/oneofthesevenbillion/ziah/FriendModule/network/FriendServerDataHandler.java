@@ -38,7 +38,7 @@ public class FriendServerDataHandler implements Runnable {
                         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
                         int pktid = dis.readInt();
                         if (pktid != -1) {
-                            PacketManager.onPacketData(this.netManager, pktid, dis);
+                            PacketManager.onPacketData(this.netManager, packet.getAddress().getHostAddress(), pktid, dis);
                         }
                     }
                 } catch (Exception e) {
