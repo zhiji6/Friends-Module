@@ -12,7 +12,7 @@ public class PacketPingPong extends Packet {
 	public boolean isResponse;
 
     public PacketPingPong(boolean isResponse) {
-        this.packetID = 5;
+        this.packetID = 4;
         this.isResponse = isResponse;
     }
 
@@ -25,15 +25,19 @@ public class PacketPingPong extends Packet {
         }
 
         if (packet.isResponse) {
-        	System.out.println("Received ping response packet from " + sender);
+        	if (!ModuleFriend.getInstance().getIPs().contains(sender)) ModuleFriend.getInstance().getIPs().add(sender);
 	        if (!ModuleFriend.getInstance().getOnlineIPs().contains(sender)) ModuleFriend.getInstance().getOnlineIPs().add(sender);
 	        try {
-				PacketManager.sendPacket(sender, new PacketHi());
+				PacketManager.sendPacket(sender, new PacketServeFriend(ModuleFriend.getInstance().getPlayer()));
 			} catch (NotConnectedException e) {
-				// Ignore
+				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when serving friend!", e);
+			}
+	        try {
+				PacketManager.sendPacket(sender, new PacketServeIPs(ModuleFriend.getInstance().getIPs()));
+			} catch (NotConnectedException e) {
+				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when serving ips!", e);
 			}
         }else{
-        	System.out.println("Received ping request packet from " + sender);
         	try {
 				PacketManager.sendPacket(sender, new PacketPingPong(true));
 			} catch (NotConnectedException e) {

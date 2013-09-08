@@ -72,6 +72,11 @@ public class ModuleFriend {
         this.player = new Friend(Minecraft.getMinecraft().func_110432_I().func_111285_a(), "Example Realname", "Example Description", null, false, true);
 
         this.friendServerNetworkManager = new FriendServerNetworkManager(25503);
+
+        for (String ip : this.ips) {
+        	this.ping(ip);
+        }
+
         try {
             ZiahsClient.getInstance().registerMenuButton(new GuiSmallButton(0, 0, 0, Locale.localize("ziahsclient.gui.friends")), this.getClass().getDeclaredMethod("onFriendButtonClicked"), this);
         } catch (Exception e) {}

@@ -16,7 +16,7 @@ public class PacketServeIPs extends Packet {
     public List<String> ips;
 
     public PacketServeIPs(List<String> ips) {
-        this.packetID = 4;
+        this.packetID = 3;
         this.ips = ips;
     }
 
@@ -27,12 +27,12 @@ public class PacketServeIPs extends Packet {
         }catch (EOFException e) {
             return null;
         }
-        System.out.println("Received serve ips packet from " + sender);
         ModuleFriend.getInstance().getIPs().removeAll(packet.ips);
         ModuleFriend.getInstance().getIPs().addAll(packet.ips);
         for (String ip : new ArrayList<String>(ModuleFriend.getInstance().getIPs())) {
         	try {
-				if (InetAddress.getByName(ip).isLoopbackAddress()) {
+        		InetAddress inetaddr = InetAddress.getByName(ip);
+				if (inetaddr.isLoopbackAddress() || inetaddr.isLinkLocalAddress() || InetAddress.getLocalHost().equals(inetaddr)) {
 					ModuleFriend.getInstance().getIPs().remove(ip);
 				}
 			} catch (UnknownHostException e) {

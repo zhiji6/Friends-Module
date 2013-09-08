@@ -13,9 +13,8 @@ public class PacketRegistry {
         this.registerPacket(0, PacketChat.class);
         this.registerPacket(1, PacketPlaySound.class);
         this.registerPacket(2, PacketServeFriend.class);
-        this.registerPacket(3, PacketHi.class);
-        this.registerPacket(4, PacketServeIPs.class);
-        this.registerPacket(5, PacketPingPong.class);
+        this.registerPacket(3, PacketServeIPs.class);
+        this.registerPacket(4, PacketPingPong.class);
     }
 
     public void registerPacket(int id, Class packet) {

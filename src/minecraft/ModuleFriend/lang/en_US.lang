@@ -31,3 +31,4 @@ ziahsclient.gui.friends.network_status=Network Status: %STATUS%
 ziahsclient.gui.friends.network_status.ping=, Ping: %PING%
 ziahsclient.gui.friends.status.online=Online
 ziahsclient.gui.friends.status.offline=Offline
+ziahsclient.gui.friends.reload=Reload

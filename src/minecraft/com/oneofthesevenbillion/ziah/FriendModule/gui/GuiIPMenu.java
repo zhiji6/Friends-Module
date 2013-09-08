@@ -47,8 +47,9 @@ public class GuiIPMenu extends GuiScreen {
     public void initGui() {
         this.listWidth = 84;
         this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, Locale.localize("ziahsclient.gui.done")));
-        this.buttonList.add(new GuiSmallButton(7, 4, this.height - 52, Locale.localize("ziahsclient.gui.friends.remove_ip")));
-        this.buttonList.add(new GuiSmallButton(8, 158, this.height - 28, Locale.localize("ziahsclient.gui.friends.add_ip")));
+        this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, Locale.localize("ziahsclient.gui.friends.remove_ip")));
+        this.buttonList.add(new GuiSmallButton(11, 158, this.height - 52, Locale.localize("ziahsclient.gui.friends.add_ip")));
+        this.buttonList.add(new GuiSmallButton(9, 158, this.height - 28, Locale.localize("ziahsclient.gui.friends.reload")));
         this.ipList = new GuiSlotIPs(this, this.ips, this.listWidth);
         this.ipList.registerScrollButtons(this.buttonList, 7, 8);
     }
@@ -60,7 +61,7 @@ public class GuiIPMenu extends GuiScreen {
                 case 6:
                     this.mc.displayGuiScreen(this.parent);
                     return;
-                case 7:
+                case 10:
                     try {
                         this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_remove_ip").replace("%IP%", this.selectedIp), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("removeipCallback", Integer.class), this));
                     } catch (NoSuchMethodException e) {
@@ -69,8 +70,11 @@ public class GuiIPMenu extends GuiScreen {
                         // Impossible
                     }
                     return;
-                case 8:
+                case 11:
                     this.mc.displayGuiScreen(new GuiAddIP(this));
+                    return;
+                case 9:
+                	ModuleFriend.getInstance().ping(this.selectedIp);
                     return;
             }
         }
@@ -86,6 +90,7 @@ public class GuiIPMenu extends GuiScreen {
     public void updateScreen() {
         if (this.buttonList.size() <= 0) return;
         ((GuiButton) this.buttonList.get(1)).enabled = this.selected != -1;
+        ((GuiButton) this.buttonList.get(3)).enabled = this.selected != -1;
         if (!this.hostnameChecked || this.lastSelected != this.selected) {
         	this.hostname = null;
 			try {
