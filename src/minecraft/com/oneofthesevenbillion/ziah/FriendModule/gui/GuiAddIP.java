@@ -88,7 +88,7 @@ public class GuiAddIP extends GuiScreen {
 
     @Override
     public void drawScreen(int par1, int par2, float par3) {
-        this.drawDefaultBackground();
+    	this.drawBackground(0);
         this.drawCenteredString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.add_ip"), this.width / 2, 17, 16777215);
         this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.type_ip_below"), this.width / 2 - 100, 94, 10526880);
         this.ip.drawTextBox();

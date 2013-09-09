@@ -28,7 +28,6 @@ public class PacketPlaySound extends Packet {
         }catch (EOFException e) {
             return null;
         }
-        System.out.println((new StringBuilder("Playing ")).append(packet.soundname).append("...").toString());
         Minecraft.getMinecraft().sndManager.playSound(packet.soundname, (float) Minecraft.getMinecraft().thePlayer.posX, (float) Minecraft.getMinecraft().thePlayer.posY, (float) Minecraft.getMinecraft().thePlayer.posZ, packet.volume, packet.pitch);
         return packet;
     }

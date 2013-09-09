@@ -46,12 +46,15 @@ public class GuiIPMenu extends GuiScreen {
 	@Override
     public void initGui() {
         this.listWidth = 84;
-        this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, Locale.localize("ziahsclient.gui.done")));
-        this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, Locale.localize("ziahsclient.gui.friends.remove_ip")));
-        this.buttonList.add(new GuiSmallButton(11, 158, this.height - 52, Locale.localize("ziahsclient.gui.friends.add_ip")));
-        this.buttonList.add(new GuiSmallButton(9, 158, this.height - 28, Locale.localize("ziahsclient.gui.friends.reload")));
+        this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, 130, 20, Locale.localize("ziahsclient.gui.done")));
+        this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, 130, 20, Locale.localize("ziahsclient.gui.friends.remove_ip")));
+        this.buttonList.add(new GuiSmallButton(11, 138, this.height - 52, 130, 20, Locale.localize("ziahsclient.gui.friends.add_ip")));
+        this.buttonList.add(new GuiSmallButton(9, 138, this.height - 28, 130, 20, Locale.localize("ziahsclient.gui.friends.reload")));
         this.ipList = new GuiSlotIPs(this, this.ips, this.listWidth);
         this.ipList.registerScrollButtons(this.buttonList, 7, 8);
+        for (String ip : this.ips) {
+        	ModuleFriend.getInstance().ping(ip);
+        }
     }
 
     @Override

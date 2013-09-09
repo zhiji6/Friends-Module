@@ -24,7 +24,9 @@ public class PacketServeFriend extends Packet {
         } catch (EOFException e) {
             return null;
         }
-        System.out.println("Received friend: " + packet.friend.getUsername());
+
+        packet.friend.setIP(sender);
+
         for (Friend friend : ModuleFriend.getInstance().getAvailableFriends()) {
         	if (friend.getUsername().equals(packet.friend.getUsername())) {
         		ModuleFriend.getInstance().getAvailableFriends().remove(friend);

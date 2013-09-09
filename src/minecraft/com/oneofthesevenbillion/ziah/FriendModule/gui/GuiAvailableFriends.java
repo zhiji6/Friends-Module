@@ -51,8 +51,8 @@ public class GuiAvailableFriends extends GuiScreen {
     @Override
     public void initGui() {
         this.listWidth = 200;
-        this.buttonList.add(new GuiSmallButton(0, 4, this.height - 28, Locale.localize("ziahsclient.gui.done")));
-        this.buttonList.add(new GuiSmallButton(1, 4, this.height - 52, Locale.localize("ziahsclient.gui.friends.friend")));
+        this.buttonList.add(new GuiSmallButton(0, 4, this.height - 28, 130, 20, Locale.localize("ziahsclient.gui.done")));
+        this.buttonList.add(new GuiSmallButton(1, 4, this.height - 52, 130, 20, Locale.localize("ziahsclient.gui.friends.friend")));
         this.friendList = new GuiSlotAvailableFriends(this, this.friends, this.listWidth);
         this.friendList.registerScrollButtons(this.buttonList, 7, 8);
     }

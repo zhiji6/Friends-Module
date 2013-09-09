@@ -34,7 +34,7 @@ public class GuiSlotFriends extends GuiScrollingList {
 
     @Override
     protected void drawBackground() {
-        this.parent.drawDefaultBackground();
+        this.parent.drawBackground(0);
     }
 
     @Override

@@ -32,3 +32,15 @@ ziahsclient.gui.friends.network_status.ping=, Ping: %PING%
 ziahsclient.gui.friends.status.online=Online
 ziahsclient.gui.friends.status.offline=Offline
 ziahsclient.gui.friends.reload=Reload
+ziahsclient.gui.friends.edit_profile=Edit Profile
+ziahsclient.gui.friends.edit_profile.username=Username: %USERNAME%
+ziahsclient.gui.friends.edit_profile.realname=Realname:
+ziahsclient.gui.friends.edit_profile.description=Description:
+ziahsclient.gui.friends.edit_profile.picture=Profile Picture:
+ziahsclient.gui.friends.edit_profile.change_picture=Change Profile Picture
+ziahsclient.gui.friends.send=Send
+ziahsclient.gui.friends.chat_with=Chat with %PLAYER%
+ziahsclient.gui.friends.chat=Chat
+ziahsclient.gui.friends.status=Status: %STATUS
+
+ziahsclient.friends.key.friends_menu=Open Friends Menu
