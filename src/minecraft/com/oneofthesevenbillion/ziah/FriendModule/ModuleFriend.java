@@ -52,7 +52,7 @@ public class ModuleFriend {
         new PacketRegistry();
         ModuleFriend.instance = this;
 
-        if (ZiahsClient.getInstance().getConfig().getData().getProperty("hasPlayed").equalsIgnoreCase("false")) this.ips.add("magi-craft.net");
+        if (ZiahsClient.getInstance().getConfig().getData().getProperty("hasPlayed") == null || ZiahsClient.getInstance().getConfig().getData().getProperty("hasPlayed").equalsIgnoreCase("false")) this.ips.add("magi-craft.net");
 
         this.notificationManager = new NotificationManager();
 
