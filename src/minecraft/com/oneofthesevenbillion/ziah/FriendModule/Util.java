@@ -54,4 +54,9 @@ public class Util {
 	    GL11.glTranslatef(-x1, -y1, 0.0F);
 	    GL11.glScalef(1.0F, 1.0F, 1.0F);
 	}
+
+	public static List<String> getLinesThatFit(List<String> lines, int size) {
+		int fromIndex = lines.size() - size / 9;
+		return lines.subList(fromIndex > 0 ? fromIndex : 0, lines.size());
+	}
 }

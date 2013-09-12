@@ -20,7 +20,6 @@ import org.lwjgl.opengl.GL11;
 
 import com.oneofthesevenbillion.ziah.FriendModule.Friend;
 import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
-import com.oneofthesevenbillion.ziah.FriendModule.network.NotConnectedException;
 import com.oneofthesevenbillion.ziah.FriendModule.network.PacketChat;
 import com.oneofthesevenbillion.ziah.FriendModule.network.PacketManager;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
@@ -38,20 +37,20 @@ public class GuiFriends extends GuiScreen {
     public GuiFriends(GuiScreen parent, List<Friend> friends) {
         this.parent = parent;
         this.friends = friends;
-        this.title = Locale.localize("ziahsclient.gui.friends");
+        this.title = "Friends Menu";
     }
 
     @Override
     public void initGui() {
         this.listWidth = 200;
-        this.buttonList.add(new GuiSmallButton(11, 216, this.height - 52, 100, 20, Locale.localize("ziahsclient.gui.friends.block")));
-        this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, 130, 20, Locale.localize("ziahsclient.gui.done")));
-        this.buttonList.add(new GuiSmallButton(12, 138, this.height - 28, 75, 20, Locale.localize("ziahsclient.gui.friends.open_ip_menu")));
-        this.buttonList.add(new GuiSmallButton(9, 138, this.height - 52, 75, 20, Locale.localize("ziahsclient.gui.friends.unfriend")));
-        this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, 130, 20, Locale.localize("ziahsclient.gui.friends.disable_punch_protection")));
-        this.buttonList.add(new GuiSmallButton(13, 216, this.height - 28, 100, 20, Locale.localize("ziahsclient.gui.friends.open_available_friends_menu")));
-        this.buttonList.add(new GuiSmallButton(14, 320, this.height - 28, 100, 20, Locale.localize("ziahsclient.gui.friends.edit_profile")));
-        this.buttonList.add(new GuiSmallButton(15, 320, this.height - 52, 100, 20, Locale.localize("ziahsclient.gui.friends.chat")));
+        this.buttonList.add(new GuiSmallButton(11, 216, this.height - 52, 100, 20, "Block"));
+        this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, 130, 20, "Done"));
+        this.buttonList.add(new GuiSmallButton(12, 138, this.height - 28, 75, 20, "IP Menu"));
+        this.buttonList.add(new GuiSmallButton(9, 138, this.height - 52, 75, 20, "Unfriend"));
+        this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, 130, 20, "Disable Punch Protection"));
+        this.buttonList.add(new GuiSmallButton(13, 216, this.height - 28, 100, 20, "Find More Friends"));
+        this.buttonList.add(new GuiSmallButton(14, 320, this.height - 28, 100, 20, "Edit Profile"));
+        this.buttonList.add(new GuiSmallButton(15, 320, this.height - 52, 100, 20, "Chat"));
         this.friendList = new GuiSlotFriends(this, this.friends, this.listWidth);
         this.friendList.registerScrollButtons(this.buttonList, 7, 8);
         for (String ip : ModuleFriend.getInstance().getIPs()) {
@@ -68,7 +67,7 @@ public class GuiFriends extends GuiScreen {
                     return;
                 case 9:
                     try {
-                        this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_unfriend").replace("%USERNAME%", this.selectedFriend.getUsername()), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("unfriendCallback", Integer.class), this));
+                        this.mc.displayGuiScreen(new GuiQuestion(this, "Are you sure you want to unfriend " + this.selectedFriend.getUsername() + "?", "Yes", "No", this.getClass().getDeclaredMethod("unfriendCallback", Integer.class), this));
                     } catch (NoSuchMethodException e) {
                         // Impossible
                     } catch (SecurityException e) {
@@ -81,7 +80,7 @@ public class GuiFriends extends GuiScreen {
                 case 11:
                 	if (!this.selectedFriend.isBlocked()) {
                         try {
-                            this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_block").replace("%USERNAME%", this.selectedFriend.getUsername()), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("blockCallback", Integer.class), this));
+                            this.mc.displayGuiScreen(new GuiQuestion(this, "Are you sure you want to block " + this.selectedFriend.getUsername() + "?", "Yes", "No", this.getClass().getDeclaredMethod("blockCallback", Integer.class), this));
                         } catch (NoSuchMethodException e) {
                             // Impossible
                         } catch (SecurityException e) {
@@ -121,8 +120,8 @@ public class GuiFriends extends GuiScreen {
         ((GuiButton) this.buttonList.get(4)).enabled = this.selected != -1;
         ((GuiButton) this.buttonList.get(7)).enabled = this.selected != -1 && this.selectedFriend.getStatus();
         if (this.selected != -1) {
-            ((GuiButton) this.buttonList.get(0)).displayString = Locale.localize(this.selectedFriend.isBlocked() ? "ziahsclient.gui.friends.unblock" : "ziahsclient.gui.friends.block");
-            ((GuiButton) this.buttonList.get(4)).displayString = Locale.localize(this.selectedFriend.isPunchProtectionEnabled() ? "ziahsclient.gui.friends.disable_punch_protection" : "ziahsclient.gui.friends.enable_punch_protection");
+            ((GuiButton) this.buttonList.get(0)).displayString = this.selectedFriend.isBlocked() ? "Unblock" : "Block";
+            ((GuiButton) this.buttonList.get(4)).displayString = this.selectedFriend.isPunchProtectionEnabled() ? "Disable Punch Protection" : "Enable Punch Protection";
         }
     }
 
@@ -163,20 +162,20 @@ public class GuiFriends extends GuiScreen {
                 offsetY += dim.height + 2;
             }
 
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.username").replace("%USERNAME%", this.selectedFriend.getUsername()), offsetX, offsetY, 0xFFFFFF);
+            this.drawString(this.fontRenderer, "Username: " + this.selectedFriend.getUsername(), offsetX, offsetY, 0xFFFFFF);
             offsetY += 9;
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.realname").replace("%REALNAME%", this.selectedFriend.getRealname()), offsetX, offsetY, 0xDDDDDD);
+            this.drawString(this.fontRenderer, "Realname: " + this.selectedFriend.getRealname(), offsetX, offsetY, 0xDDDDDD);
             offsetY += 9;
-            this.drawString(this.fontRenderer, this.selectedFriend.isBlocked() ? Locale.localize("ziahsclient.gui.friends.blocked") : Locale.localize("ziahsclient.gui.friends.not_blocked"), offsetX, offsetY, this.selectedFriend.isBlocked() ? 0xFFFF5555 : 0xFF00AA00);
+            this.drawString(this.fontRenderer, this.selectedFriend.isBlocked() ? "Blocked" : "Not Blocked", offsetX, offsetY, this.selectedFriend.isBlocked() ? 0xFFFF5555 : 0xFF00AA00);
             offsetY += 9;
-            this.drawString(this.fontRenderer, this.selectedFriend.isPunchProtectionEnabled() ? Locale.localize("ziahsclient.gui.friends.punch_protection_enabled") : Locale.localize("ziahsclient.gui.friends.punch_protection_disabled"), offsetX, offsetY, this.selectedFriend.isPunchProtectionEnabled() ? 0xFF00AA00 : 0xFFFF5555);
+            this.drawString(this.fontRenderer, this.selectedFriend.isPunchProtectionEnabled() ? "Punch Protection Enabled" : "Punch Protection Disabled", offsetX, offsetY, this.selectedFriend.isPunchProtectionEnabled() ? 0xFF00AA00 : 0xFFFF5555);
             offsetY += 9;
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.status").replace("%STATUS%", (this.selectedFriend.getStatus() ? EnumChatFormatting.GREEN + Locale.localize("ziahsclient.gui.friends.status.online") : EnumChatFormatting.RED + Locale.localize("ziahsclient.gui.friends.status.offline")) + EnumChatFormatting.RESET), offsetX, offsetY, 0xDDDDDD);
+            this.drawString(this.fontRenderer, "Status: " + (this.selectedFriend.getStatus() ? EnumChatFormatting.GREEN + "Online" : EnumChatFormatting.RED + "Offline") + EnumChatFormatting.RESET, offsetX, offsetY, 0xDDDDDD);
             offsetY += 9;
             offsetY += 9;
             
             int i = 0;
-            for (String curStr : ((List<String>) this.fontRenderer.listFormattedStringToWidth(Locale.localize("ziahsclient.gui.friends.description").replace("%DESCRIPTION%", this.selectedFriend.getDescription()), (this.width - 5) - offsetX))) {
+            for (String curStr : ((List<String>) this.fontRenderer.listFormattedStringToWidth("Description: " + this.selectedFriend.getDescription(), (this.width - 5) - offsetX))) {
                 this.drawString(this.fontRenderer, curStr, offsetX, offsetY, 0xDDDDDD);
                 offsetY += 9;
                 i++;

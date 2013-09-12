@@ -15,6 +15,8 @@ import java.util.logging.Level;
 import javax.imageio.ImageIO;
 
 import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
+import com.oneofthesevenbillion.ziah.FriendModule.exception.NotRunningException;
+import com.oneofthesevenbillion.ziah.FriendModule.exception.UnableToSendException;
 import com.oneofthesevenbillion.ziah.ZiahsClient.ZiahsClient;
 
 public class PacketManager {
@@ -42,27 +44,32 @@ public class PacketManager {
         return data;
     }
 
-    public static void onPacketData(FriendServerNetworkManager netManager, String sender, int pktid, DataInputStream dis) {
+    public static void onPacketData(NetworkManager netManager, String sender, int pktid, DataInputStream dis) {
         try {
             Class packet = PacketRegistry.instance.getPacketByID(pktid);
-            if (packet != null) packet.getMethod("process", FriendServerNetworkManager.class, String.class, DataInputStream.class).invoke(null, netManager, sender, dis);
-            else
+            if (packet != null) {
+            	packet.getMethod("process", NetworkManager.class, String.class, DataInputStream.class).invoke(null, netManager, sender, dis);
+            }else{
                 ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Unknown packet " + pktid + ".");
-        }catch (Exception e) {
+            }
+        } catch (Exception e) {
             ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when reading packet.", e);
         }
     }
 
-    public static void sendPacket(String ip, Packet packet) throws NotConnectedException {
+    public static void sendPacket(String address, Packet packet) throws NotRunningException, UnableToSendException {
         if (!ModuleFriend.getInstance().getFriendServerNetworkManager().isRunning()) {
-            throw new NotConnectedException();
+            throw new NotRunningException();
         }else{
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             packet.write(new DataOutputStream(baos));
             try {
             	int size = baos.size();
-            	ModuleFriend.getInstance().getFriendServerNetworkManager().getSocket().send(new DatagramPacket(new byte[] {(byte) ((size >>> 24) & 0xFF), (byte) ((size >>> 16) & 0xFF), (byte) ((size >>> 8) & 0xFF), (byte) ((size >>> 0) & 0xFF)}, 4, Inet4Address.getByName(ip), ModuleFriend.getInstance().getFriendServerNetworkManager().getPort()));
-            	ModuleFriend.getInstance().getFriendServerNetworkManager().getSocket().send(new DatagramPacket(baos.toByteArray(), size, Inet4Address.getByName(ip), ModuleFriend.getInstance().getFriendServerNetworkManager().getPort()));
+            	NetworkManager.getInstance().addAddressIfNotAlreadyAdded(address);
+            	Connection con = NetworkManager.getInstance().getNetworkConnectionManager().getConnectionForAddress(address);
+            	if (con == null) throw new UnableToSendException();
+            	con.sendData(new byte[] {(byte) ((size >>> 24) & 0xFF), (byte) ((size >>> 16) & 0xFF), (byte) ((size >>> 8) & 0xFF), (byte) ((size >>> 0) & 0xFF)});
+            	con.sendData(baos.toByteArray());
             } catch (IOException e) {
                 ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when sending packet.", e);
             }

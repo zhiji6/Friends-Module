@@ -6,6 +6,7 @@ import java.io.EOFException;
 import java.util.logging.Level;
 
 import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
+import com.oneofthesevenbillion.ziah.FriendModule.exception.NotRunningException;
 import com.oneofthesevenbillion.ziah.ZiahsClient.ZiahsClient;
 
 public class PacketPingPong extends Packet {
@@ -16,7 +17,7 @@ public class PacketPingPong extends Packet {
         this.isResponse = isResponse;
     }
 
-    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
+    public static Packet process(NetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketPingPong packet = new PacketPingPong(false);
         try {
             packet.read(dataStream);
@@ -29,18 +30,18 @@ public class PacketPingPong extends Packet {
 	        if (!ModuleFriend.getInstance().getOnlineIPs().contains(sender)) ModuleFriend.getInstance().getOnlineIPs().add(sender);
 	        try {
 				PacketManager.sendPacket(sender, new PacketServeFriend(ModuleFriend.getInstance().getPlayer()));
-			} catch (NotConnectedException e) {
+			} catch (Exception e) {
 				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when serving friend!", e);
 			}
 	        try {
 				PacketManager.sendPacket(sender, new PacketServeIPs(ModuleFriend.getInstance().getIPs()));
-			} catch (NotConnectedException e) {
+			} catch (Exception e) {
 				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when serving ips!", e);
 			}
         }else{
         	try {
 				PacketManager.sendPacket(sender, new PacketPingPong(true));
-			} catch (NotConnectedException e) {
+			} catch (Exception e) {
 				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when sending pong!", e);
 			}
         }

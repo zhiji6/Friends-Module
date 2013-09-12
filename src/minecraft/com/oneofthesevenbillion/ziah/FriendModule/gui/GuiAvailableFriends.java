@@ -19,7 +19,6 @@ import org.lwjgl.opengl.GL11;
 
 import com.oneofthesevenbillion.ziah.FriendModule.Friend;
 import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
-import com.oneofthesevenbillion.ziah.FriendModule.network.NotConnectedException;
 import com.oneofthesevenbillion.ziah.FriendModule.network.PacketChat;
 import com.oneofthesevenbillion.ziah.FriendModule.network.PacketManager;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
@@ -37,7 +36,7 @@ public class GuiAvailableFriends extends GuiScreen {
     public GuiAvailableFriends(GuiScreen parent, List<Friend> friends) {
         this.parent = parent;
         this.friends = new ArrayList<Friend>(friends);
-        this.title = Locale.localize("ziahsclient.gui.friends.available_friends");
+        this.title = "Find More Friends";
 
         for (Friend friend2 : ModuleFriend.getInstance().getFriends()) {
             for (Friend friend : this.friends) {
@@ -51,8 +50,8 @@ public class GuiAvailableFriends extends GuiScreen {
     @Override
     public void initGui() {
         this.listWidth = 200;
-        this.buttonList.add(new GuiSmallButton(0, 4, this.height - 28, 130, 20, Locale.localize("ziahsclient.gui.done")));
-        this.buttonList.add(new GuiSmallButton(1, 4, this.height - 52, 130, 20, Locale.localize("ziahsclient.gui.friends.friend")));
+        this.buttonList.add(new GuiSmallButton(0, 4, this.height - 28, 130, 20, "Done"));
+        this.buttonList.add(new GuiSmallButton(1, 4, this.height - 52, 130, 20, "Add Friend"));
         this.friendList = new GuiSlotAvailableFriends(this, this.friends, this.listWidth);
         this.friendList.registerScrollButtons(this.buttonList, 7, 8);
     }
@@ -66,7 +65,7 @@ public class GuiAvailableFriends extends GuiScreen {
                     return;
                 case 1:
                     try {
-                        this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_friend").replace("%USERNAME%", this.selectedFriend.getUsername()), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("friendCallback", Integer.class), this));
+                        this.mc.displayGuiScreen(new GuiQuestion(this, "Are you sure you want to add " + this.selectedFriend.getUsername() + " to your friends list?", "Yes", "No", this.getClass().getDeclaredMethod("friendCallback", Integer.class), this));
                     } catch (NoSuchMethodException e) {
                         // Impossible
                     } catch (SecurityException e) {
@@ -135,14 +134,14 @@ public class GuiAvailableFriends extends GuiScreen {
                 offsetY += dim.height + 2;
             }
 
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.username").replace("%USERNAME%", this.selectedFriend.getUsername()), offsetX, offsetY, 0xFFFFFF);
+            this.drawString(this.fontRenderer, "Username: " + this.selectedFriend.getUsername(), offsetX, offsetY, 0xFFFFFF);
             offsetY += 9;
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.realname").replace("%REALNAME%", this.selectedFriend.getRealname()), offsetX, offsetY, 0xDDDDDD);
+            this.drawString(this.fontRenderer, "Realname: " + this.selectedFriend.getRealname(), offsetX, offsetY, 0xDDDDDD);
             offsetY += 9;
             offsetY += 9;
             
             int i = 0;
-            for (String curStr : ((List<String>) this.fontRenderer.listFormattedStringToWidth(Locale.localize("ziahsclient.gui.friends.description").replace("%DESCRIPTION%", this.selectedFriend.getDescription()), (this.width - 5) - offsetX))) {
+            for (String curStr : ((List<String>) this.fontRenderer.listFormattedStringToWidth("Description: " + this.selectedFriend.getDescription(), (this.width - 5) - offsetX))) {
                 this.drawString(this.fontRenderer, curStr, offsetX, offsetY, 0xDDDDDD);
                 offsetY += 9;
                 i++;

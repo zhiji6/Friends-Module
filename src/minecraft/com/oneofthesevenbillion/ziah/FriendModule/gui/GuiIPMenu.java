@@ -1,29 +1,20 @@
 package com.oneofthesevenbillion.ziah.FriendModule.gui;
 
-import java.awt.Dimension;
-import java.awt.image.BufferedImage;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.List;
 
-import org.lwjgl.opengl.GL11;
-
-import com.oneofthesevenbillion.ziah.FriendModule.Friend;
-import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
-import com.oneofthesevenbillion.ziah.FriendModule.network.ThreadFindHostname;
-import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
-import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiQuestion;
-
-import net.minecraft.src.DynamicTexture;
 import net.minecraft.src.EnumChatFormatting;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiSmallButton;
 import net.minecraft.src.Minecraft;
-import net.minecraft.src.ResourceLocation;
-import net.minecraft.src.Tessellator;
-import net.minecraft.src.TextureManager;
+
+import org.lwjgl.opengl.GL11;
+
+import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
+import com.oneofthesevenbillion.ziah.FriendModule.network.ThreadFindHostname;
+import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
+import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiQuestion;
 
 public class GuiIPMenu extends GuiScreen {
     private GuiScreen parent;
@@ -40,16 +31,16 @@ public class GuiIPMenu extends GuiScreen {
 	public GuiIPMenu(GuiScreen parent, List<String> ips) {
         this.parent = parent;
         this.ips = ips;
-        this.title = Locale.localize("ziahsclient.gui.friends.ip_menu");
+        this.title = "IP Menu";
 	}
 
 	@Override
     public void initGui() {
         this.listWidth = 84;
-        this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, 130, 20, Locale.localize("ziahsclient.gui.done")));
-        this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, 130, 20, Locale.localize("ziahsclient.gui.friends.remove_ip")));
-        this.buttonList.add(new GuiSmallButton(11, 138, this.height - 52, 130, 20, Locale.localize("ziahsclient.gui.friends.add_ip")));
-        this.buttonList.add(new GuiSmallButton(9, 138, this.height - 28, 130, 20, Locale.localize("ziahsclient.gui.friends.reload")));
+        this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, 130, 20, "Done"));
+        this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, 130, 20, "Remove IP"));
+        this.buttonList.add(new GuiSmallButton(11, 138, this.height - 52, 130, 20, "Add New IP"));
+        this.buttonList.add(new GuiSmallButton(9, 138, this.height - 28, 130, 20, "Refresh"));
         this.ipList = new GuiSlotIPs(this, this.ips, this.listWidth);
         this.ipList.registerScrollButtons(this.buttonList, 7, 8);
         for (String ip : this.ips) {
@@ -66,7 +57,7 @@ public class GuiIPMenu extends GuiScreen {
                     return;
                 case 10:
                     try {
-                        this.mc.displayGuiScreen(new GuiQuestion(this, Locale.localize("ziahsclient.gui.friends.are_you_sure_remove_ip").replace("%IP%", this.selectedIp), Locale.localize("ziahsclient.gui.yes"), Locale.localize("ziahsclient.gui.no"), this.getClass().getDeclaredMethod("removeipCallback", Integer.class), this));
+                        this.mc.displayGuiScreen(new GuiQuestion(this, "Are you sure you want to remove the ip " + this.selectedIp + "?", "Yes", "No", this.getClass().getDeclaredMethod("removeipCallback", Integer.class), this));
                     } catch (NoSuchMethodException e) {
                         // Impossible
                     } catch (SecurityException e) {
@@ -116,11 +107,11 @@ public class GuiIPMenu extends GuiScreen {
             GL11.glEnable(GL11.GL_BLEND);
             int offsetY = 35;
 
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.ip").replace("%IP%", this.selectedIp) + (hostname != null ? Locale.localize("ziahsclient.gui.friends.ip.hostname").replace("%HOSTNAME%", hostname) : ""), offsetX, offsetY, 0xFFFFFF);
+            this.drawString(this.fontRenderer, "IP: " + this.selectedIp + (this.hostname != null ? ", Hostname: " + this.hostname : ""), offsetX, offsetY, 0xFFFFFF);
             offsetY += 9;
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.friend_status").replace("%STATUS%", (ModuleFriend.getInstance().getOnlineIPs().contains(this.selectedIp) ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + Locale.localize("ziahsclient.gui.friends.status." + (ModuleFriend.getInstance().getOnlineIPs().contains(this.selectedIp) ? "online" : "offline")) + EnumChatFormatting.RESET), offsetX, offsetY, 0xFFFFFF);
+            this.drawString(this.fontRenderer, "Friend Status: " + (ModuleFriend.getInstance().getOnlineIPs().contains(this.selectedIp) ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + (ModuleFriend.getInstance().getOnlineIPs().contains(this.selectedIp) ? "Online" : "Offline") + EnumChatFormatting.RESET, offsetX, offsetY, 0xFFFFFF);
             offsetY += 9;
-            this.drawString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.network_status").replace("%STATUS%", (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + Locale.localize("ziahsclient.gui.friends.status." + (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? "online" : "offline")) + EnumChatFormatting.RESET) + (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? Locale.localize("ziahsclient.gui.friends.network_status.ping").replace("%PING%", ModuleFriend.getInstance().getIPNetPings().containsKey(this.selectedIp) ? String.valueOf(ModuleFriend.getInstance().getIPNetPings().get(this.selectedIp) < 2000 ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + ModuleFriend.getInstance().getIPNetPings().get(this.selectedIp) + "ms" + EnumChatFormatting.RESET + " Roundtrip" : "Unknown") : ""), offsetX, offsetY, 0xFFFFFF);
+            this.drawString(this.fontRenderer, "Network Status: " + (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? "Online" : "Offline") + EnumChatFormatting.RESET + (ModuleFriend.getInstance().getNetOnlineIPs().contains(this.selectedIp) ? ", Ping: " + (ModuleFriend.getInstance().getIPNetPings().containsKey(this.selectedIp) ? String.valueOf(ModuleFriend.getInstance().getIPNetPings().get(this.selectedIp) < 2000 ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + ModuleFriend.getInstance().getIPNetPings().get(this.selectedIp) + "ms" + EnumChatFormatting.RESET + " Roundtrip" : "Unknown") : ""), offsetX, offsetY, 0xFFFFFF);
             offsetY += 9;
             offsetY += 9;
             GL11.glDisable(GL11.GL_BLEND);

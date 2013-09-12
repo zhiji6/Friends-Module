@@ -17,7 +17,7 @@ public class PacketServeFriend extends Packet {
         this.friend = friend;
     }
 
-    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
+    public static Packet process(NetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketServeFriend packet = new PacketServeFriend(null);
         try {
             packet.read(dataStream);

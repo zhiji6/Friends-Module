@@ -22,7 +22,7 @@ public class PacketServeIPs extends Packet {
         this.ips = ips;
     }
 
-    public static Packet process(FriendServerNetworkManager netManager, String sender, DataInputStream dataStream) {
+    public static Packet process(NetworkManager netManager, String sender, DataInputStream dataStream) {
         PacketServeIPs packet = new PacketServeIPs(null);
         try {
             packet.read(dataStream);

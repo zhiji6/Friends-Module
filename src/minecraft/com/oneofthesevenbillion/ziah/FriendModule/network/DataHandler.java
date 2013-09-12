@@ -4,27 +4,32 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.logging.Level;
 
 import com.oneofthesevenbillion.ziah.ZiahsClient.ZiahsClient;
 
-public class FriendServerDataHandler implements Runnable {
-    private FriendServerNetworkManager netManager;
+public class DataHandler implements Runnable {
+    private NetworkManager netManager;
+    private String address;
 
-    public FriendServerDataHandler(FriendServerNetworkManager netManager) {
+    public DataHandler(NetworkManager netManager, String address) {
         this.netManager = netManager;
+        this.address = address;
+        System.out.println("New data handler for " + address);
     }
 
     @Override
     public void run() {
+    	Connection con = this.netManager.getNetworkConnectionManager().getConnectionForAddress(this.address);
+    	if (con == null) return;
+    	System.out.println("Data handler for " + this.address + " started");
         try {
             while (true) {
-                //if (this.netManager.getSocket().isClosed() || !this.netManager.getSocket().isConnected()) break;
                 try {
                 	byte[] buf = new byte[4];
-                	DatagramPacket packet = new DatagramPacket(buf, buf.length);
-                    this.netManager.getSocket().receive(packet);
+                    con.receiveData(buf);
                     int ch1 = buf[0];
                     int ch2 = buf[1];
                     int ch3 = buf[2];
@@ -33,12 +38,11 @@ public class FriendServerDataHandler implements Runnable {
                     int size = (ch1 << 24) + (ch2 << 16) + (ch3 << 8) + (ch4 << 0);
                     if (size != -1) {
                         byte[] bytes = new byte[size];
-                        packet = new DatagramPacket(bytes, bytes.length);
-                        this.netManager.getSocket().receive(packet);
+                        con.receiveData(bytes);
                         DataInputStream dis = new DataInputStream(new ByteArrayInputStream(bytes));
                         int pktid = dis.readInt();
                         if (pktid != -1) {
-                            PacketManager.onPacketData(this.netManager, packet.getAddress().getHostAddress(), pktid, dis);
+                            PacketManager.onPacketData(this.netManager, this.address, pktid, dis);
                         }
                     }
                 } catch (Exception e) {
@@ -49,5 +53,6 @@ public class FriendServerDataHandler implements Runnable {
         } catch (Exception e) {
             ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when listening for a friend server", e);
         }
+        System.out.println("Data handler for " + this.address + " stopped");
     }
 }

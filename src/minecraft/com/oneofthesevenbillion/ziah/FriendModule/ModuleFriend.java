@@ -23,7 +23,7 @@ import net.minecraft.src.KeyBinding;
 import net.minecraft.src.Minecraft;
 
 import com.oneofthesevenbillion.ziah.FriendModule.gui.GuiFriends;
-import com.oneofthesevenbillion.ziah.FriendModule.network.FriendServerNetworkManager;
+import com.oneofthesevenbillion.ziah.FriendModule.network.NetworkManager;
 import com.oneofthesevenbillion.ziah.FriendModule.network.PacketRegistry;
 import com.oneofthesevenbillion.ziah.FriendModule.network.ThreadPing;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
@@ -40,7 +40,7 @@ public class ModuleFriend {
 	private List<String> netOnlineIps = new ArrayList<String>();
 	private Map<String, Long> ipNetPings = new HashMap<String, Long>();
 	private Map<String, ChatManager> chatManagers = new HashMap<String, ChatManager>();
-    private FriendServerNetworkManager friendServerNetworkManager;
+    private NetworkManager networkManager;
     private Friend player;
     private File ipFile;
     private File friendFile;
@@ -56,7 +56,7 @@ public class ModuleFriend {
 
         this.notificationManager = new NotificationManager();
 
-        this.friendsKey = new KeyBinding(Locale.localize("ziahsclient.friends.key.friends_menu"), Keyboard.KEY_F);
+        this.friendsKey = new KeyBinding("Friends Menu", Keyboard.KEY_F);
         ZiahsClient.getInstance().registerKey(this, this.friendsKey);
 
         ZiahsClient.getInstance().getEventBus().registerEventHandler(this.getClass(), new EventHandler());
@@ -108,14 +108,14 @@ public class ModuleFriend {
 			ZiahsClient.getInstance().getLogger().log(Level.SEVERE, "Exception when reading profile file, not storing profile!!!");
 		}
 
-        this.friendServerNetworkManager = new FriendServerNetworkManager(25503);
+        this.networkManager = new NetworkManager(25503);
 
         for (String ip : this.ips) {
         	this.ping(ip);
         }
 
         try {
-            ZiahsClient.getInstance().registerMenuButton(new GuiSmallButton(0, 0, 0, Locale.localize("ziahsclient.gui.friends")), this.getClass().getDeclaredMethod("onFriendButtonClicked"), this);
+            ZiahsClient.getInstance().registerMenuButton(new GuiSmallButton(0, 0, 0, "Friends"), this.getClass().getDeclaredMethod("onFriendButtonClicked"), this);
         } catch (Exception e) {}
     }
 
@@ -234,13 +234,15 @@ public class ModuleFriend {
 		return this.ipNetPings;
 	}
 
-    public FriendServerNetworkManager getFriendServerNetworkManager() {
-        return this.friendServerNetworkManager;
+    public NetworkManager getFriendServerNetworkManager() {
+        return this.networkManager;
     }
 
 	public void receivedChatMessage(String sender, String message) {
-		this.getChatManager(sender).getMessages().add(message);
-		this.notificationManager.getNotifications().add(new NotificationData("Message from " + sender, message));
+		Friend friend = this.getFriend(sender);
+
+		this.getChatManager(sender).getReceivedMessages().add(message);
+		if (friend == null || !friend.isBlocked()) this.notificationManager.getNotifications().add(new NotificationData("Message from " + sender, message));
 	}
 
 	public ChatManager getChatManager(String sender) {

@@ -25,6 +25,7 @@ import net.minecraft.src.TextureManager;
 
 import com.oneofthesevenbillion.ziah.FriendModule.ChatManager;
 import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
+import com.oneofthesevenbillion.ziah.FriendModule.Util;
 import com.oneofthesevenbillion.ziah.FriendModule.exception.FriendNotFoundException;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
 import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiMessage;
@@ -52,8 +53,8 @@ public class GuiFriendChat extends GuiScreen {
     public void initGui() {
         Keyboard.enableRepeatEvents(true);
         this.buttonList.clear();
-        this.buttonList.add(new GuiButton(0, this.width - 4 - 50 - 4 - 50, this.height - 20 - 4, 50, 20, Locale.localize("ziahsclient.gui.friends.send")));
-        this.buttonList.add(new GuiButton(1, this.width - 4 - 50, this.height - 20 - 4, 50, 20, Locale.localize("ziahsclient.gui.back")));
+        this.buttonList.add(new GuiButton(0, this.width - 4 - 50 - 4 - 50, this.height - 20 - 4, 50, 20, "Send"));
+        this.buttonList.add(new GuiButton(1, this.width - 4 - 50, this.height - 20 - 4, 50, 20, "Back"));
         this.message = new GuiTextField(this.fontRenderer, 4, this.height - 20 - 4, this.width - 4 - 50 - 4 - 50 - 4 - 4, 20);
         this.message.setFocused(true);
         this.message.setMaxStringLength(1000);
@@ -106,10 +107,10 @@ public class GuiFriendChat extends GuiScreen {
         int offsetX = 4;
         int offsetCenteredX = this.width / 2;
         int offsetY = 17;
-        this.drawCenteredString(this.fontRenderer, Locale.localize("ziahsclient.gui.friends.chat_with").replace("%PLAYER%", this.chatManager.getSender()), offsetCenteredX, offsetY, 16777215);
+        this.drawCenteredString(this.fontRenderer, "Chat with " + this.chatManager.getSender(), offsetCenteredX, offsetY, 16777215);
         offsetY += 9;
         offsetY += 9;
-        for (String message : this.chatManager.getMessagesThatFit(this.height - 4 - 20 - 4 - offsetY)) {
+        for (String message : Util.getLinesThatFit(this.chatManager.getReceivedMessages(), this.height - 4 - 20 - 4 - offsetY)) {
         	this.drawString(this.fontRenderer, message, offsetX, offsetY, 0xFFFFFF);
         	offsetY += 9;
         }
