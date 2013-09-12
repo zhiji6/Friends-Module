@@ -1,5 +1,6 @@
 package com.oneofthesevenbillion.ziah.FriendModule.network;
 
+import java.net.DatagramSocket;
 import java.net.Inet4Address;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -9,6 +10,7 @@ import java.util.Map;
 public class NetworkConnectionManager {
 	private Map<String, Connection> connections = new HashMap<String, Connection>();
 	private boolean isCreating = false;
+	private DatagramSocket socket;
 
 	public Connection getConnectionForAddress(String addr) {
 		if (this.isCreating) System.out.println("Trying to get connection for " + addr + ", waiting for other connection creations to finish");
@@ -40,6 +42,7 @@ public class NetworkConnectionManager {
 	}
 
 	private Connection createNewConnection(String addr) throws SocketException, UnknownHostException {
-		return new UDPConnection(Inet4Address.getByName(addr));
+		if (this.socket == null) this.socket = new DatagramSocket(NetworkManager.getInstance().getPort());
+		return new UDPConnection(this.socket, Inet4Address.getByName(addr));
 	}
 }
