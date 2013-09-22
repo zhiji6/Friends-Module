@@ -2,6 +2,7 @@ package com.oneofthesevenbillion.ziah.FriendModule.gui;
 
 import java.util.List;
 
+import net.minecraft.src.EnumChatFormatting;
 import net.minecraft.src.Tessellator;
 
 import com.oneofthesevenbillion.ziah.FriendModule.Friend;
@@ -47,6 +48,6 @@ public class GuiSlotFriends extends GuiScrollingList {
         Friend friend = this.friends.get(listIndex);
         this.parent.getFontRenderer().drawString(this.parent.getFontRenderer().trimStringToWidth(friend.getUsername(), this.listWidth - 10), this.left + 3, var3 + 2, 0xFFFFFF);
         this.parent.getFontRenderer().drawString(this.parent.getFontRenderer().trimStringToWidth(friend.getRealname(), this.listWidth - 10), this.left + 3, var3 + 12, 0xCCCCCC);
-        this.parent.getFontRenderer().drawString(this.parent.getFontRenderer().trimStringToWidth(friend.getDescription(), this.listWidth - 10), this.left + 3, var3 + 22, 0xCCCCCC);
+        this.parent.getFontRenderer().drawString(this.parent.getFontRenderer().trimStringToWidth((friend.getStatus() ? EnumChatFormatting.GREEN + "Online" : EnumChatFormatting.RED + "Offline") + EnumChatFormatting.RESET, this.listWidth - 10), this.left + 3, var3 + 22, 0xCCCCCC);
     }
 }

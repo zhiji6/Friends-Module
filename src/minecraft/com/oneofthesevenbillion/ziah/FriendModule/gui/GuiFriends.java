@@ -20,8 +20,6 @@ import org.lwjgl.opengl.GL11;
 
 import com.oneofthesevenbillion.ziah.FriendModule.Friend;
 import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
-import com.oneofthesevenbillion.ziah.FriendModule.network.PacketChat;
-import com.oneofthesevenbillion.ziah.FriendModule.network.PacketManager;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
 import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiQuestion;
 
@@ -43,19 +41,15 @@ public class GuiFriends extends GuiScreen {
     @Override
     public void initGui() {
         this.listWidth = 200;
-        this.buttonList.add(new GuiSmallButton(11, 216, this.height - 52, 100, 20, "Block"));
         this.buttonList.add(new GuiSmallButton(6, 4, this.height - 28, 130, 20, "Done"));
-        this.buttonList.add(new GuiSmallButton(12, 138, this.height - 28, 75, 20, "IP Menu"));
-        this.buttonList.add(new GuiSmallButton(9, 138, this.height - 52, 75, 20, "Unfriend"));
+        this.buttonList.add(new GuiSmallButton(9, 138, this.height - 52, 130, 20, "Unfriend"));
         this.buttonList.add(new GuiSmallButton(10, 4, this.height - 52, 130, 20, "Disable Punch Protection"));
-        this.buttonList.add(new GuiSmallButton(13, 216, this.height - 28, 100, 20, "Find More Friends"));
-        this.buttonList.add(new GuiSmallButton(14, 320, this.height - 28, 100, 20, "Edit Profile"));
-        this.buttonList.add(new GuiSmallButton(15, 320, this.height - 52, 100, 20, "Chat"));
+        this.buttonList.add(new GuiSmallButton(13, 138, this.height - 28, 130, 20, "Find More Friends"));
+        this.buttonList.add(new GuiSmallButton(14, 272, this.height - 28, 130, 20, "Edit Profile"));
+        this.buttonList.add(new GuiSmallButton(15, 272, this.height - 52, 130, 20, "Chat"));
+        this.buttonList.add(new GuiSmallButton(11, 272 + 130 + 4, this.height - 52, 130, 20, "Open Admin Menu"));
         this.friendList = new GuiSlotFriends(this, this.friends, this.listWidth);
         this.friendList.registerScrollButtons(this.buttonList, 7, 8);
-        for (String ip : ModuleFriend.getInstance().getIPs()) {
-        	ModuleFriend.getInstance().ping(ip);
-        }
     }
 
     @Override
@@ -78,23 +72,10 @@ public class GuiFriends extends GuiScreen {
                     this.selectedFriend.togglePunchProtection();
                     return;
                 case 11:
-                	if (!this.selectedFriend.isBlocked()) {
-                        try {
-                            this.mc.displayGuiScreen(new GuiQuestion(this, "Are you sure you want to block " + this.selectedFriend.getUsername() + "?", "Yes", "No", this.getClass().getDeclaredMethod("blockCallback", Integer.class), this));
-                        } catch (NoSuchMethodException e) {
-                            // Impossible
-                        } catch (SecurityException e) {
-                            // Impossible
-                        }
-                    }else{
-                        this.selectedFriend.toggleBlockedStatus();
-                    }
-                    return;
-                case 12:
-                    this.mc.displayGuiScreen(new GuiIPMenu(this, ModuleFriend.getInstance().getIPs()));
+                    this.mc.displayGuiScreen(new GuiAdminMenu(this, this.selectedFriend.getUsername()));
                     return;
                 case 13:
-                    this.mc.displayGuiScreen(new GuiAvailableFriends(this, ModuleFriend.getInstance().getAvailableFriends()));
+                    this.mc.displayGuiScreen(new GuiAvailableFriends(this));
                     return;
                 case 14:
                     this.mc.displayGuiScreen(new GuiEditProfile(this));
@@ -115,13 +96,12 @@ public class GuiFriends extends GuiScreen {
     @Override
     public void updateScreen() {
         if (this.buttonList.size() <= 0) return;
-        ((GuiButton) this.buttonList.get(0)).enabled = this.selected != -1;
-        ((GuiButton) this.buttonList.get(3)).enabled = this.selected != -1;
-        ((GuiButton) this.buttonList.get(4)).enabled = this.selected != -1;
-        ((GuiButton) this.buttonList.get(7)).enabled = this.selected != -1 && this.selectedFriend.getStatus();
+        ((GuiButton) this.buttonList.get(1)).enabled = this.selected != -1;
+        ((GuiButton) this.buttonList.get(2)).enabled = this.selected != -1;
+        ((GuiButton) this.buttonList.get(5)).enabled = this.selected != -1;
+        ((GuiButton) this.buttonList.get(6)).enabled = this.selected != -1;
         if (this.selected != -1) {
-            ((GuiButton) this.buttonList.get(0)).displayString = this.selectedFriend.isBlocked() ? "Unblock" : "Block";
-            ((GuiButton) this.buttonList.get(4)).displayString = this.selectedFriend.isPunchProtectionEnabled() ? "Disable Punch Protection" : "Enable Punch Protection";
+            ((GuiButton) this.buttonList.get(2)).displayString = this.selectedFriend.isPunchProtectionEnabled() ? "Disable Punch Protection" : "Enable Punch Protection";
         }
     }
 
@@ -166,8 +146,6 @@ public class GuiFriends extends GuiScreen {
             offsetY += 9;
             this.drawString(this.fontRenderer, "Realname: " + this.selectedFriend.getRealname(), offsetX, offsetY, 0xDDDDDD);
             offsetY += 9;
-            this.drawString(this.fontRenderer, this.selectedFriend.isBlocked() ? "Blocked" : "Not Blocked", offsetX, offsetY, this.selectedFriend.isBlocked() ? 0xFFFF5555 : 0xFF00AA00);
-            offsetY += 9;
             this.drawString(this.fontRenderer, this.selectedFriend.isPunchProtectionEnabled() ? "Punch Protection Enabled" : "Punch Protection Disabled", offsetX, offsetY, this.selectedFriend.isPunchProtectionEnabled() ? 0xFF00AA00 : 0xFFFF5555);
             offsetY += 9;
             this.drawString(this.fontRenderer, "Status: " + (this.selectedFriend.getStatus() ? EnumChatFormatting.GREEN + "Online" : EnumChatFormatting.RED + "Offline") + EnumChatFormatting.RESET, offsetX, offsetY, 0xDDDDDD);
@@ -205,14 +183,6 @@ public class GuiFriends extends GuiScreen {
 
     public boolean friendIndexSelected(int var1) {
         return var1 == this.selected;
-    }
-
-    public void blockCallback(Integer button) {
-        switch (button) {
-            case 0:
-                this.selectedFriend.toggleBlockedStatus();
-                break;
-        }
     }
 
     public void unfriendCallback(Integer button) {

@@ -1,5 +1,7 @@
 package com.oneofthesevenbillion.ziah.FriendModule;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
@@ -8,24 +10,36 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 
+import javax.imageio.ImageIO;
+
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.lwjgl.input.Keyboard;
 
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiSmallButton;
 import net.minecraft.src.KeyBinding;
 import net.minecraft.src.Minecraft;
+import net.minecraft.src.PlayerControllerMP;
 
+import com.google.gson.Gson;
+import com.oneofthesevenbillion.ziah.FriendModule.gui.GuiFriendChat;
 import com.oneofthesevenbillion.ziah.FriendModule.gui.GuiFriends;
-import com.oneofthesevenbillion.ziah.FriendModule.network.NetworkManager;
-import com.oneofthesevenbillion.ziah.FriendModule.network.PacketRegistry;
-import com.oneofthesevenbillion.ziah.FriendModule.network.ThreadPing;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Module;
 import com.oneofthesevenbillion.ziah.ZiahsClient.ZiahsClient;
@@ -34,25 +48,16 @@ import com.oneofthesevenbillion.ziah.ZiahsClient.ZiahsClient;
 public class ModuleFriend {
     private static ModuleFriend instance;
     private List<Friend> friends = new ArrayList<Friend>();
-    private List<Friend> availableFriends = new ArrayList<Friend>();
-    private List<String> ips = new ArrayList<String>();
-	private List<String> onlineIps = new ArrayList<String>();
-	private List<String> netOnlineIps = new ArrayList<String>();
-	private Map<String, Long> ipNetPings = new HashMap<String, Long>();
 	private Map<String, ChatManager> chatManagers = new HashMap<String, ChatManager>();
-    private NetworkManager networkManager;
     private Friend player;
-    private File ipFile;
     private File friendFile;
     private File profileFile;
 	private KeyBinding friendsKey;
 	private NotificationManager notificationManager;
 
     public void load() {
-        new PacketRegistry();
+    	new ActionRegistry();
         ModuleFriend.instance = this;
-
-        if (ZiahsClient.getInstance().getConfig().getData().getProperty("hasPlayed") == null || ZiahsClient.getInstance().getConfig().getData().getProperty("hasPlayed").equalsIgnoreCase("false")) this.ips.add("magi-craft.net");
 
         this.notificationManager = new NotificationManager();
 
@@ -61,12 +66,7 @@ public class ModuleFriend {
 
         ZiahsClient.getInstance().getEventBus().registerEventHandler(this.getClass(), new EventHandler());
 
-        this.player = new Friend(Minecraft.getMinecraft().func_110432_I().func_111285_a(), "", "", "", null, false, true);
-
-        this.ipFile = new File(ZiahsClient.getInstance().getDataDir(), "friends" + File.separator + "friendIps.dat");
-        try {
-			if (!this.ipFile.exists()) this.ipFile.createNewFile();
-        } catch (IOException e) {}
+        this.player = new Friend(Minecraft.getMinecraft().func_110432_I().func_111285_a(), "", "", (int) (System.currentTimeMillis() / 1000), /*"",*/ null);
 
         this.friendFile = new File(ZiahsClient.getInstance().getDataDir(), "friends" + File.separator + "players" + File.separator + Minecraft.getMinecraft().func_110432_I().func_111285_a() + File.separator + "friends.dat");
         try {
@@ -85,14 +85,6 @@ public class ModuleFriend {
         } catch (IOException e) {}
 
         try {
-			DataInputStream ipFileIn = new DataInputStream(new FileInputStream(this.ipFile));
-			this.loadIPs(ipFileIn);
-			ipFileIn.close();
-		} catch (Exception e) {
-			ZiahsClient.getInstance().getLogger().log(Level.SEVERE, "Exception when reading ips file, not storing ips!!!");
-		}
-
-        try {
         	DataInputStream friendFileIn = new DataInputStream(new FileInputStream(this.friendFile));
 			this.loadFriends(friendFileIn);
 			friendFileIn.close();
@@ -108,45 +100,65 @@ public class ModuleFriend {
 			ZiahsClient.getInstance().getLogger().log(Level.SEVERE, "Exception when reading profile file, not storing profile!!!");
 		}
 
-        this.networkManager = new NetworkManager(25503);
-
-        for (String ip : this.ips) {
-        	this.ping(ip);
-        }
-
         try {
             ZiahsClient.getInstance().registerMenuButton(new GuiSmallButton(0, 0, 0, "Friends"), this.getClass().getDeclaredMethod("onFriendButtonClicked"), this);
         } catch (Exception e) {}
+
+        Friend us = this.getFriend(this.player.getUsername(), true);
+        
+        if (us == null) {
+			Map<String, String> map = new HashMap<String, String>();
+			map.put("username", this.player.getUsername());
+			map.put("realname", this.player.getRealname());
+			map.put("description", this.player.getDescription());
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			if (this.player.hasProfilePicture()) {
+				try {
+					ImageIO.write(this.player.getProfilePicture(), "png", baos);
+				} catch (IOException e) {
+					baos.reset();
+				}
+			}
+			map.put("picture", baos.toString());
+			try {
+				Map<String, Object> response = ModuleFriend.getInstance().runFriendServerAction("addfriend", map);
+				if (((Double) response.get("status")).intValue() == 0) {
+					this.player.setID(Integer.parseInt((String) response.get("id")));
+				}
+			} catch (IOException e) {
+				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when adding the player as a friend!", e);
+			}
+        }else{
+        	if (!us.equals(this.player)) {
+        		if (us.getUpdateTime() < this.player.getUpdateTime()) {
+	    			Map<String, String> map = new HashMap<String, String>();
+	    			map.put("username", this.player.getUsername());
+	    			map.put("realname", this.player.getRealname());
+	    			map.put("description", this.player.getDescription());
+	    			map.put("updatetime", String.valueOf(this.player.getUpdateTime()));
+	    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	    			if (this.player.hasProfilePicture()) {
+	    				try {
+	    					ImageIO.write(this.player.getProfilePicture(), "png", baos);
+	    				} catch (IOException e) {
+	    					baos.reset();
+	    				}
+	    			}
+	    			map.put("picture", baos.toString());
+	    			try {
+	    				ModuleFriend.getInstance().runFriendServerAction("heartbeatupdate", map);
+	    			} catch (IOException e) {
+	    				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when updating the friend server!", e);
+	    			}
+        		}else{
+        			this.player.setRealname(us.getRealname());
+        			this.player.setDescription(us.getDescription());
+        			this.player.setProfilePicture(us.getProfilePicture());
+        			this.player.setUpdateTime(us.getUpdateTime());
+        		}
+        	}
+        }
     }
-
-	public void loadIPs(DataInputStream in) {
-		try {
-			List<String> ips = new ArrayList<String>();
-			int length = in.readInt();
-			for (int i = 0; i < length; i++) {
-				String ip = in.readUTF();
-				ips.add(ip);
-			}
-			this.ips.removeAll(ips);
-			this.ips.addAll(ips);
-		} catch (Exception e) {
-			if (e instanceof EOFException) return;
-			ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when loading ips!", e);
-		}
-	}
-
-	public void saveIPs() {
-		try {
-			DataOutputStream out = new DataOutputStream(new FileOutputStream(this.ipFile));
-			out.writeInt(this.ips.size());
-			for (String ip : this.ips) {
-				out.writeUTF(ip);
-			}
-			out.close();
-		} catch (Exception e) {
-			ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when saving ips!", e);
-		}
-	}
 
     public void loadFriends(DataInputStream in) {
     	try {
@@ -214,35 +226,13 @@ public class ModuleFriend {
         return this.friends;
     }
 
-    public List<Friend> getAvailableFriends() {
-        return this.availableFriends;
-    }
-
-    public List<String> getIPs() {
-        return this.ips;
-    }
-
-	public List<String> getOnlineIPs() {
-		return this.onlineIps;
-	}
-
-	public List<String> getNetOnlineIPs() {
-		return this.netOnlineIps;
-	}
-
-	public Map<String, Long> getIPNetPings() {
-		return this.ipNetPings;
-	}
-
-    public NetworkManager getFriendServerNetworkManager() {
-        return this.networkManager;
-    }
-
 	public void receivedChatMessage(String sender, String message) {
 		Friend friend = this.getFriend(sender);
 
-		this.getChatManager(sender).getReceivedMessages().add(message);
-		if (friend == null || !friend.isBlocked()) this.notificationManager.getNotifications().add(new NotificationData("Message from " + sender, message));
+		this.getChatManager(sender).addReceivedMessage(message);
+		if (Minecraft.getMinecraft().currentScreen == null || !(Minecraft.getMinecraft().currentScreen instanceof GuiFriendChat) || (Minecraft.getMinecraft().currentScreen instanceof GuiFriendChat && !((GuiFriendChat) Minecraft.getMinecraft().currentScreen).getChatManager().getPlayer().equalsIgnoreCase(sender))) {
+			this.notificationManager.getNotifications().add(new NotificationData("Message from " + sender, message));
+		}
 	}
 
 	public ChatManager getChatManager(String sender) {
@@ -254,10 +244,6 @@ public class ModuleFriend {
 		return this.player;
 	}
 
-	public void ping(String ip) {
-		new ThreadPing(ip).start();
-	}
-
 	public KeyBinding getFriendsKey() {
 		return this.friendsKey;
 	}
@@ -267,22 +253,45 @@ public class ModuleFriend {
 	}
 
 	public Friend getFriend(String username) {
+		return this.getFriend(username, false);
+	}
+
+	public Friend getFriend(String username, boolean onlyRemote) {
 		Friend friend = null;
 
-		for (Friend curFriend : this.friends) {
-			if (curFriend.getUsername().equalsIgnoreCase(username)) {
-				friend = curFriend;
-				break;
+		if (!onlyRemote) {
+			for (Friend curFriend : this.friends) {
+				if (curFriend.getUsername().equalsIgnoreCase(username)) {
+					friend = curFriend;
+					break;
+				}
 			}
 		}
 
-		for (Friend curFriend : this.availableFriends) {
-			if (curFriend.getUsername().equalsIgnoreCase(username)) {
-				friend = curFriend;
-				break;
+		if (friend == null) {
+			Map<String, String> map = new HashMap<String, String>();
+			map.put("username", username);
+			try {
+				Map<String, Object> response = ModuleFriend.getInstance().runFriendServerAction("getfriend", map);
+				if (response.get("status") == Integer.valueOf(0)) {
+					Map<String, Object> friendData = (Map<String, Object>) response.get("friend");
+					friend = new Friend((String) friendData.get("username"), (String) friendData.get("realname"), (String) friendData.get("description"), Integer.parseInt((String) friendData.get("id")), null);
+					friend.setUpdateTime(Integer.parseInt((String) friendData.get("updatetime")));
+				}
+			} catch (IOException e) {
+				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when getting friend from friend server!", e);
 			}
 		}
 
 		return friend;
+	}
+
+	public Map<String, Object> runFriendServerAction(String action, Map<String, String> params) throws IOException {
+		Response res = Jsoup.connect("http://magi-craft.net/friends.php").data("action", action).data(params).method(Method.POST).execute();
+		String response = res.body();
+
+		Gson gson = new Gson();
+		Map<String, Object> map = gson.fromJson(response, Map.class);
+		return map;
 	}
 }

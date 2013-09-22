@@ -2,26 +2,35 @@ package com.oneofthesevenbillion.ziah.FriendModule.gui;
 
 import java.awt.Dimension;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+
+import javax.imageio.ImageIO;
 
 import net.minecraft.src.DynamicTexture;
+import net.minecraft.src.EnumChatFormatting;
 import net.minecraft.src.FontRenderer;
 import net.minecraft.src.GuiButton;
 import net.minecraft.src.GuiScreen;
 import net.minecraft.src.GuiSmallButton;
+import net.minecraft.src.GuiTextField;
 import net.minecraft.src.Minecraft;
 import net.minecraft.src.ResourceLocation;
 import net.minecraft.src.Tessellator;
 import net.minecraft.src.TextureManager;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import com.oneofthesevenbillion.ziah.FriendModule.Friend;
 import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
-import com.oneofthesevenbillion.ziah.FriendModule.network.PacketChat;
-import com.oneofthesevenbillion.ziah.FriendModule.network.PacketManager;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
+import com.oneofthesevenbillion.ziah.ZiahsClient.ZiahsClient;
 import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiQuestion;
 
 public class GuiAvailableFriends extends GuiScreen {
@@ -32,19 +41,13 @@ public class GuiAvailableFriends extends GuiScreen {
     private int listWidth;
     private List<Friend> friends;
     private String title;
+    private GuiTextField search;
+    private String message;
 
-    public GuiAvailableFriends(GuiScreen parent, List<Friend> friends) {
+    public GuiAvailableFriends(GuiScreen parent) {
         this.parent = parent;
-        this.friends = new ArrayList<Friend>(friends);
+        this.friends = new ArrayList<Friend>();
         this.title = "Find More Friends";
-
-        for (Friend friend2 : ModuleFriend.getInstance().getFriends()) {
-            for (Friend friend : this.friends) {
-            	if (friend.getUsername().equalsIgnoreCase(friend2.getUsername())) {
-            		this.friends.remove(friend);
-            	}
-            }
-    	}
     }
 
     @Override
@@ -54,6 +57,8 @@ public class GuiAvailableFriends extends GuiScreen {
         this.buttonList.add(new GuiSmallButton(1, 4, this.height - 52, 130, 20, "Add Friend"));
         this.friendList = new GuiSlotAvailableFriends(this, this.friends, this.listWidth);
         this.friendList.registerScrollButtons(this.buttonList, 7, 8);
+        this.search = new GuiTextField(this.fontRenderer, 10, 16 + 9 + 4 + 9 + 4, 200, 20);
+        this.search.setFocused(true);
     }
 
     @Override
@@ -85,6 +90,7 @@ public class GuiAvailableFriends extends GuiScreen {
     @Override
     public void updateScreen() {
         if (this.buttonList.size() <= 0) return;
+        this.search.updateCursorCounter();
         boolean isFriended = false;
         if (this.selectedFriend != null) {
 	        for (Friend friend : ModuleFriend.getInstance().getFriends()) {
@@ -102,6 +108,8 @@ public class GuiAvailableFriends extends GuiScreen {
         if (this.friendList == null) return;
         this.friendList.drawScreen(mouseX, mouseY, tick);
         this.drawCenteredString(this.fontRenderer, this.title, this.width / 2, 16, 0xFFFFFF);
+        this.drawString(this.fontRenderer, "Search:", 10, 16 + 9 + 4, 0xFFFFFF);
+        if (this.friends.isEmpty() && this.message != null && this.message.length() > 0) this.drawCenteredString(this.fontRenderer, this.message, 10 + (this.listWidth / 2), this.height / 2, 0xFFFFFF);
         int offsetX = this.listWidth + 20;
         if (this.selectedFriend != null) {
             GL11.glEnable(GL11.GL_BLEND);
@@ -138,6 +146,8 @@ public class GuiAvailableFriends extends GuiScreen {
             offsetY += 9;
             this.drawString(this.fontRenderer, "Realname: " + this.selectedFriend.getRealname(), offsetX, offsetY, 0xDDDDDD);
             offsetY += 9;
+            this.drawString(this.fontRenderer, "Status: " + (this.selectedFriend.getStatus() ? EnumChatFormatting.GREEN + "Online" : EnumChatFormatting.RED + "Offline") + EnumChatFormatting.RESET, offsetX, offsetY, 0xDDDDDD);
+            offsetY += 9;
             offsetY += 9;
             
             int i = 0;
@@ -149,6 +159,7 @@ public class GuiAvailableFriends extends GuiScreen {
             offsetY += 9;
             GL11.glDisable(GL11.GL_BLEND);
         }
+        this.search.drawTextBox();
         super.drawScreen(mouseX, mouseY, tick);
     }
 
@@ -181,5 +192,61 @@ public class GuiAvailableFriends extends GuiScreen {
                 this.selectFriendIndex(-1);
                 break;
         }
+    }
+
+    @Override
+    public void keyTyped(char character, int characterCode) {
+        super.keyTyped(character, characterCode);
+        this.search.textboxKeyTyped(character, characterCode);
+
+        if (this.search.isFocused() && characterCode == Keyboard.KEY_RETURN) {
+        	this.friends.clear();
+        	this.message = null;
+    		Map<String, String> map = new HashMap<String, String>();
+    		map.put("query", this.search.getText());
+        	try {
+				Map<String, Object> response = ModuleFriend.getInstance().runFriendServerAction("search", map);
+				if (((Double) response.get("status")).intValue() == 0) {
+					List<Map<String, Object>> results = (List<Map<String, Object>>) response.get("results");
+
+					for (Map<String, Object> friend : results) {
+						Friend friendObj = new Friend((String) friend.get("username"), (String) friend.get("realname"), (String) friend.get("description"), Integer.parseInt((String) friend.get("id")), ImageIO.read(new ByteArrayInputStream(((String) friend.get("picture")).getBytes())));
+						friendObj.setStatus((Boolean) friend.get("status"));
+						friendObj.setUpdateTime(Integer.parseInt((String) friend.get("updatetime")));
+						this.friends.add(friendObj);
+					}
+				}else{
+	            	this.message = (String) response.get("message");
+				}
+    		} catch (IOException e) {
+    			ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when searching!", e);
+    		}
+
+	        for (Friend friend : new ArrayList<Friend>(this.friends)) {
+	        	if (friend.getUsername().equalsIgnoreCase(ModuleFriend.getInstance().getPlayer().getUsername())) {
+	        		this.friends.remove(friend);
+	        	}
+	        }
+	
+	        for (Friend friend2 : new ArrayList<Friend>(ModuleFriend.getInstance().getFriends())) {
+	            for (Friend friend : new ArrayList<Friend>(this.friends)) {
+	            	if (friend.getUsername().equalsIgnoreCase(friend2.getUsername())) {
+	            		this.friends.remove(friend);
+	            	}
+	            }
+	    	}
+
+	        if (this.selected < this.friends.size()) {
+	        	this.selectFriendIndex(this.selected);
+	        }else{
+	        	this.selectFriendIndex(-1);
+	        }
+        }
+    }
+
+    @Override
+    protected void mouseClicked(int par1, int par2, int par3) {
+        super.mouseClicked(par1, par2, par3);
+        this.search.mouseClicked(par1, par2, par3);
     }
 }

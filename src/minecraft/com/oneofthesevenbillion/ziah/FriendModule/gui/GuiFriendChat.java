@@ -72,11 +72,11 @@ public class GuiFriendChat extends GuiScreen {
         if (button.enabled) {
             switch (button.id) {
             	case 0:
-					try {
-						this.chatManager.sendMessage(this.message.getText());
-					} catch (FriendNotFoundException e) {
+					//try {
+					this.chatManager.sendMessage(this.message.getText());
+					/*} catch (FriendNotFoundException e) {
 						Minecraft.getMinecraft().displayGuiScreen(new GuiMessage(this.parent, "The friend you tried to send a message to doesn't exist!"));
-					}
+					}*/
             		break;
             	case 1:
             		Minecraft.getMinecraft().displayGuiScreen(this.parent);
@@ -107,14 +107,18 @@ public class GuiFriendChat extends GuiScreen {
         int offsetX = 4;
         int offsetCenteredX = this.width / 2;
         int offsetY = 17;
-        this.drawCenteredString(this.fontRenderer, "Chat with " + this.chatManager.getSender(), offsetCenteredX, offsetY, 16777215);
+        this.drawCenteredString(this.fontRenderer, "Chat with " + this.chatManager.getPlayer(), offsetCenteredX, offsetY, 16777215);
         offsetY += 9;
         offsetY += 9;
-        for (String message : Util.getLinesThatFit(this.chatManager.getReceivedMessages(), this.height - 4 - 20 - 4 - offsetY)) {
+        for (String message : Util.getLinesThatFit(this.chatManager.getAllMessages(), this.height - 4 - 20 - 4 - offsetY)) {
         	this.drawString(this.fontRenderer, message, offsetX, offsetY, 0xFFFFFF);
         	offsetY += 9;
         }
         this.message.drawTextBox();
         super.drawScreen(par1, par2, par3);
+    }
+
+    public ChatManager getChatManager() {
+    	return this.chatManager;
     }
 }

@@ -7,10 +7,14 @@ import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
 import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -22,6 +26,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.oneofthesevenbillion.ziah.FriendModule.ModuleFriend;
 import com.oneofthesevenbillion.ziah.ZiahsClient.Locale;
+import com.oneofthesevenbillion.ziah.ZiahsClient.ZiahsClient;
 import com.oneofthesevenbillion.ziah.ZiahsClient.gui.GuiMessage;
 import com.oneofthesevenbillion.ziah.ZiahsClient.util.ArrayUtils;
 
@@ -89,6 +94,24 @@ public class GuiEditProfile extends GuiScreen {
                 ModuleFriend.getInstance().getPlayer().setDescription(this.description.getText());
                 ModuleFriend.getInstance().getPlayer().setProfilePicture(this.profilePicture);
                 ModuleFriend.getInstance().saveProfile();
+                Map<String, String> map = new HashMap<String, String>();
+    			map.put("username", ModuleFriend.getInstance().getPlayer().getUsername());
+    			map.put("realname", ModuleFriend.getInstance().getPlayer().getRealname());
+    			map.put("description", ModuleFriend.getInstance().getPlayer().getDescription());
+    			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    			if (ModuleFriend.getInstance().getPlayer().hasProfilePicture()) {
+	    			try {
+	    				ImageIO.write(ModuleFriend.getInstance().getPlayer().getProfilePicture(), "png", baos);
+	    			} catch (IOException e) {
+	    				baos.reset();
+	    			}
+    			}
+    			map.put("picture", baos.toString());
+    			try {
+    				ModuleFriend.getInstance().runFriendServerAction("heartbeatupdate", map);
+    			} catch (IOException e) {
+    				ZiahsClient.getInstance().getLogger().log(Level.WARNING, "Exception when updating the friend server!", e);
+    			}
                 Minecraft.getMinecraft().displayGuiScreen(this.parent);
             }else
             if (button.id == 2) {

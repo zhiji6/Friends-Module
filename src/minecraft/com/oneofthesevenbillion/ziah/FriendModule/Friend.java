@@ -4,28 +4,28 @@ import java.awt.image.BufferedImage;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.logging.Level;
 
 import javax.imageio.ImageIO;
 
-import com.oneofthesevenbillion.ziah.FriendModule.network.PacketManager;
+import com.oneofthesevenbillion.ziah.ZiahsClient.ZiahsClient;
 
 public class Friend {
     private String username;
     private String realname;
     private String description;
-	private String ip;
+	private int id;
     private BufferedImage profilePicture;
-    private boolean blocked = false;
     private boolean punchProtection = true;
+	private boolean status = false;
+	private int updateTime = 0;
 
-    public Friend(String username, String realname, String description, String ip, BufferedImage profilePicture, boolean blocked, boolean punchProtection) {
+    public Friend(String username, String realname, String description, /*String ip,*/ int id, BufferedImage profilePicture) {
         this.username = username;
         this.realname = realname;
         this.description = description;
-        this.ip = ip;
+        this.id = id;
         this.profilePicture = profilePicture;
-        this.blocked = blocked;
-        this.punchProtection = punchProtection;
     }
 
     public String getUsername() {
@@ -48,14 +48,6 @@ public class Friend {
         this.description = description;
     }
 
-	public String getIP() {
-		return this.ip;
-	}
-
-	public void setIP(String ip) {
-		this.ip = ip;
-	}
-
     public boolean hasProfilePicture() {
         return this.profilePicture != null;
     }
@@ -68,14 +60,6 @@ public class Friend {
         this.profilePicture = profilePicture;
     }
 
-    public boolean isBlocked() {
-        return this.blocked;
-    }
-
-    public void toggleBlockedStatus() {
-        this.blocked = !this.blocked;
-    }
-
     public boolean isPunchProtectionEnabled() {
         return this.punchProtection;
     }
@@ -84,11 +68,35 @@ public class Friend {
         this.punchProtection = !this.punchProtection;
     }
 
-    public boolean getStatus() {
+	public boolean getStatus() {
+		return this.status;
+	}
+
+	public void setStatus(boolean status) {
+		this.status = status;
+	}
+
+	public int getUpdateTime() {
+		return this.updateTime;
+	}
+
+	public void setUpdateTime(int updateTime) {
+		this.updateTime = updateTime;
+	}
+
+	public int getID() {
+		return this.id;
+	}
+
+	public void setID(int id) {
+		this.id = id;
+	}
+
+    /*public boolean getStatus() {
     	if (this.ip == null) return false;
 
     	return ModuleFriend.getInstance().getOnlineIPs().contains(this.ip);
-    }
+    }*/
 
     public void unfriend() {
         ModuleFriend.getInstance().getFriends().remove(this);
@@ -96,10 +104,48 @@ public class Friend {
     }
 
     public static Friend readFromStream(DataInputStream dataStream) throws IOException {
-		return new Friend(dataStream.readUTF(), dataStream.readUTF(), dataStream.readUTF(), dataStream.readUTF(), ImageIO.read(dataStream), false, true);
+    	Friend friend = new Friend(dataStream.readUTF(), dataStream.readUTF(), dataStream.readUTF(), dataStream.readInt(), null);
+    	friend.setUpdateTime(dataStream.readInt());
+    	friend.setProfilePicture(ImageIO.read(dataStream));
+		return friend;
     }
 
-	public void writeToStream(DataOutputStream dataStream) {
-		PacketManager.encodeDataStream(dataStream, (String) this.username, (String) this.realname, (String) this.description, (String) this.ip, (BufferedImage) this.profilePicture);
+	public void writeToStream(DataOutputStream dataStream) throws IOException {
+		dataStream.writeUTF(this.username);
+		dataStream.writeUTF(this.realname);
+		dataStream.writeUTF(this.description);
+		//dataStream.writeUTF(this.ip);
+		dataStream.writeInt(this.id);
+		dataStream.writeInt(this.updateTime);
+		if (this.hasProfilePicture()) ImageIO.write(this.profilePicture, "png", dataStream);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof Friend)) return false;
+
+		Friend friend = (Friend) obj;
+
+		if (this.username == friend.getUsername() && this.realname == friend.getRealname() && this.description == friend.getDescription() && this.profilePicture == friend.getProfilePicture()) return true;
+
+		boolean isEqual = true;
+
+		try {
+			if (!this.username.equals(friend.getUsername())) isEqual = false;
+		} catch (Exception e) {}
+
+		try {
+			if (!this.realname.equals(friend.getRealname())) isEqual = false;
+		} catch (Exception e) {}
+
+		try {
+			if (!this.description.equals(friend.getDescription())) isEqual = false;
+		} catch (Exception e) {}
+
+		try {
+			if (!this.profilePicture.equals(friend.getProfilePicture())) isEqual = false;
+		} catch (Exception e) {}
+
+		return isEqual;
 	}
 }
